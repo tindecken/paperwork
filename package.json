@@ -1,0 +1,20 @@
+{
+  "name": "paperwork",
+  "module": "index.ts",
+  "scripts": {
+    "generate": "drizzle-kit generate:pg --config=./drizzle/drizzle.config.ts",
+    "push": "drizzle-kit push:pg --config=./drizzle/drizzle.config.ts"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.20.14"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.30.4",
+    "postgres": "^3.4.4"
+  }
+}
