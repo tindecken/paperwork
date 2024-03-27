@@ -64,6 +64,20 @@
       "when": 1711186931847,
       "tag": "0008_conscious_thena",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1711549165510,
+      "tag": "0009_worthless_silver_surfer",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1711549942044,
+      "tag": "0010_complete_stone_men",
+      "breakpoints": true
     }
   ]
 }

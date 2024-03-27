@@ -3,7 +3,11 @@
   "module": "index.ts",
   "scripts": {
     "generate": "drizzle-kit generate:pg --config=./drizzle/drizzle.config.ts",
-    "push": "drizzle-kit push:pg --config=./drizzle/drizzle.config.ts"
+    "push": "drizzle-kit push:pg --config=./drizzle/drizzle.config.ts",
+    "dev": "bun --watch index.ts",
+    "build": "bun build index.ts",
+    "start": "NODE_ENV=production bun index.ts",
+    "test": "bun test"
   },
   "type": "module",
   "devDependencies": {
@@ -15,6 +19,7 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.30.4",
+    "elysia": "^1.0.9",
     "postgres": "^3.4.4"
   }
 }

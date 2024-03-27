@@ -1,4 +1,4 @@
-import { serial, text, timestamp, pgTable, varchar, integer, customType } from "drizzle-orm/pg-core";
+import { serial, text, timestamp, pgTable, varchar, integer, boolean } from "drizzle-orm/pg-core";
 
 
 export const users = pgTable("users", {
@@ -7,6 +7,7 @@ export const users = pgTable("users", {
   username: varchar("username", { length: 100 }).unique().notNull(),
   email: varchar('email', { length: 100 }).unique().notNull(),
   password: text("password").notNull(),
+  isActive: boolean("is_active").notNull().default(false),
   createdAt: timestamp("created_at", { precision: 6, withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { precision: 6, withTimezone: true }),
 });
