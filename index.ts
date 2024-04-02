@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia'
+import { derriveTest } from './derriveTest'
 
 const a = () => 'hello'
 class Logger {
@@ -6,11 +7,14 @@ class Logger {
         console.log('message', message)
     }
 }
+
 const app = new Elysia()
     .decorate('logger', new Logger())
     .state('thisisstateStoretoStore', 'haha aa') //==> using in store
-    .get('/', () => {
-        return {"a": "a"}
+    .use(derriveTest)
+    .get('/', ({store: {counter}, aaa}) => {
+        console.log('counter', counter)
+        console.log('aaa', aaa)
     })
     .onError(({code}) => {
         if (code === 'NOT_FOUND')

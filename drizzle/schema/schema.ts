@@ -1,25 +1,55 @@
-import { serial, text, timestamp, pgTable, varchar, integer, boolean } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { primaryKey } from "drizzle-orm/mysql-core";
+import { serial, text, timestamp, pgTable, varchar, integer, boolean, pgEnum } from "drizzle-orm/pg-core";
 
+export const roleEnum = pgEnum('role', ['admin', 'user'])
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey().notNull(),
   name: varchar("name", { length: 150 }).notNull(),
-  username: varchar("username", { length: 100 }).unique().notNull(),
+  userName: varchar("userName", { length: 100 }).unique().notNull(),
   email: varchar('email', { length: 100 }).unique().notNull(),
-  password: text("password").notNull(),
-  isActive: boolean("is_active").notNull().default(false),
+  hash: text("hash").notNull(),
+  salt: text("salt").notNull(),
+  isActive: boolean("isActive").notNull().default(true),
   createdAt: timestamp("created_at", { precision: 6, withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { precision: 6, withTimezone: true }),
 });
+
+export const usersRelations = relations(users, ({many}) => ({
+  usersFiles: many(usersFiles),
+}))
 
 export const files = pgTable("files", {
   id: serial("id").primaryKey().notNull(),
   name: varchar("name", { length: 150 }).notNull(),
   description: varchar("description", {length: 1000}),
   createdAt: timestamp("created_at", { precision: 6, withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", { precision: 6, withTimezone: true }),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  updatedAt: timestamp("updated_at", { precision: 6, withTimezone: true })
 })
+
+export const filesRelations = relations(files, ({many}) => ({
+  usersFiles: many(usersFiles),
+}))
+
+export const usersFiles = pgTable("usersFiles", {
+  id: serial("id").primaryKey().notNull(),
+  userId: integer("userId").references(() => users.id).notNull(),
+  fileId: integer("fileId").references(() => files.id).notNull(),
+  role: roleEnum("role").notNull(),
+  isActive: boolean("isActive").notNull().default(true),
+})
+
+export const usersFilesRelations = relations(usersFiles, ({one}) => ({
+  users: one(users, {
+    fields: [usersFiles.userId],
+    references: [users.id],
+  }),
+  files: one(files, {
+    fields: [usersFiles.fileId],
+    references: [files.id],
+  }),
+}))
 
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey().notNull(),

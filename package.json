@@ -1,12 +1,13 @@
 {
   "name": "paperwork",
-  "module": "index.ts",
+  "module": "server.ts",
   "scripts": {
     "generate": "drizzle-kit generate:pg --config=./drizzle/drizzle.config.ts",
     "push": "drizzle-kit push:pg --config=./drizzle/drizzle.config.ts",
-    "dev": "bun --watch index.ts",
-    "build": "bun build index.ts",
-    "start": "NODE_ENV=production bun index.ts",
+    "dev": "bun --watch server.ts",
+    "build": "bun build server.ts",
+    "start": "NODE_ENV=production bun server.ts",
+    "seed": "bun run ./drizzle/seed.ts",
     "test": "bun test"
   },
   "type": "module",
@@ -18,8 +19,14 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@elysiajs/bearer": "^1.0.2",
+    "@elysiajs/cookie": "^0.8.0",
+    "@elysiajs/cors": "^1.0.2",
+    "@elysiajs/jwt": "^1.0.2",
+    "@elysiajs/swagger": "^1.0.3",
     "drizzle-orm": "^0.30.4",
     "elysia": "^1.0.9",
+    "jose": "^5.2.3",
     "postgres": "^3.4.4"
   }
 }

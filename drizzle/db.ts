@@ -8,12 +8,4 @@ console.log('process.env.POSTGRES_CONNECTIONSTRING', process.env.POSTGRES_CONNEC
 const queryClient = postgres(process.env.POSTGRES_CONNECTIONSTRING!)
 
 const db = drizzle(queryClient, {schema})
-
-const user = await db.query.users.findFirst({where: eq(users.id, 2), 
-    with: {usersFiles: {
-        columns: {
-            role: true
-        }
-    }}})
-
-console.log('user', user)
+export default db
