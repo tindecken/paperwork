@@ -1,14 +1,9 @@
 import { Elysia } from "elysia";
-import { jwt } from '@elysiajs/jwt'
-import cookie from "@elysiajs/cookie";
+import * as jose from 'jose'
 
 export const isAuthenticated = (app: Elysia) => 
-    app.use(jwt({
-        name: 'jwt',
-        secret: Bun.env.JWT_SECRET!,
-        exp: 86400
-    }))
-    .derive(async ({cookie: { access_token }, jwt, set}) => {
+    app
+    .derive(async ({cookie: { access_token }, set}) => {
         if (!access_token.value) {
             set.status = 401
             return {
@@ -17,19 +12,28 @@ export const isAuthenticated = (app: Elysia) =>
                 data: null
             }
         }
-        console.log('access_token', access_token.value)
-        console.log('Bun.env.JWT_SECRET', Bun.env.JWT_SECRET)
-        const userInfo = await jwt.verify(access_token.value)
-        console.log('userInfoooo', userInfo)
-        if (userInfo === false) {
-            set.status = 401
+        const tokenFake = 'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MTUsIm5hbWUiOiJIb2FuZzMzIiwidXNlck5hbWUiOiJ0aW5kZWNrZW4zIiwiZW1haWwiOiJ0aW5kZWNrZW4zM0BnbWFpbC5jb20iLCJpYXQiOjE3MTIwMTYzMTksImlzcyI6InVybjpleGFtcGxlOmlzc3VlciIsImF1ZCI6InVybjpleGFtcGxlOmF1ZGllbmNlIiwiZXhwIjoxNzEyMDIzNTE5fQ.YnUpMBHmhoVYrijrq0Wm8FCE_jCGfeNPXFv-u4UMCQs'
+        let jwtDecoded: any = null
+        try {
+            jwtDecoded = await jose.jwtVerify(tokenFake, new TextEncoder().encode(Bun.env.JWT_SECRET!))
+        } catch (error) {
+            console.log(error)
+        }
+        console.log('jwtDecoded', jwtDecoded)
+        if (jwtDecoded != null) {
+            const userInfo = jwtDecoded.payload
+            console.log('userInfooo', jwtDecoded.payload)
             return {
-                success: false,
-                message: "Unauthorized",
-                data: null
+                userInfo
             }
         }
+
         return {
-            userInfo
-        }
+            success: false,
+            message: "Unauthorized",
+            data: null
+        }        
+
+
+        
     })

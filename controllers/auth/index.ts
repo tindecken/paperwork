@@ -33,27 +33,25 @@ export const auth = (app: Elysia) => app
                 userName: user[0].userName,
                 email: user[0].email
             })
-            .setProtectedHeader({ alg })
+            .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
-            .setIssuer('urn:example:issuer')
-            .setAudience('urn:example:audience')
             .setExpirationTime('2h')
             .sign(new TextEncoder().encode(Bun.env.JWT_SECRET!))
             
-            const tokenFake = 'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MTUsIm5hbWUiOiJIb2FuZzMzIiwidXNlck5hbWUiOiJ0aW5kZWNrZW4zIiwiZW1haWwiOiJ0aW5kZWNrZW4zM0BnbWFpbC5jb20iLCJpYXQiOjE3MTIwMTYzMTksImlzcyI6InVybjpleGFtcGxlOmlzc3VlciIsImF1ZCI6InVybjpleGFtcGxlOmF1ZGllbmNlIiwiZXhwIjoxNzEyMDIzNTE5fQ.YnUpMBHmhoVYrijrq0Wm8FCE_jCGfeNPXFv-u4UMCQs'
-            const { payload, protectedHeader } = await jose.jwtVerify(tokenFake, new TextEncoder().encode(Bun.env.JWT_SECRET!), {
-                issuer: 'urn:example:issuer',
-                audience: 'urn:example:audience',
-              })
+            // const tokenFake = 'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MTUsIm5hbWUiOiJIb2FuZzMzIiwidXNlck5hbWUiOiJ0aW5kZWNrZW4zIiwiZW1haWwiOiJ0aW5kZWNrZW4zM0BnbWFpbC5jb20iLCJpYXQiOjE3MTIwMTYzMTksImlzcyI6InVybjpleGFtcGxlOmlzc3VlciIsImF1ZCI6InVybjpleGFtcGxlOmF1ZGllbmNlIiwiZXhwIjoxNzEyMDIzNTE5fQ.YnUpMBHmhoVYrijrq0Wm8FCE_jCGfeNPXFv-u4UMCQs'
+            // const { payload, protectedHeader } = await jose.jwtVerify(tokenFake, new TextEncoder().encode(Bun.env.JWT_SECRET!), {
+            //     issuer: 'urn:example:issuer',
+            //     audience: 'urn:example:audience',
+            //   })
               
-              console.log(protectedHeader)
-              console.log(payload)
-            // access_token.set({
-            //     value: token,
-            //     httpOnly: true,
-            //     maxAge: 7 * 86400,
-            //     path: '/',
-            // })
+            //   console.log(protectedHeader)
+            //   console.log(payload)
+            access_token.set({
+                value: token,
+                httpOnly: true,
+                maxAge: 7 * 86400,
+                path: '/',
+            })
             return {
                 'access_token': token
             }
