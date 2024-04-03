@@ -6,15 +6,17 @@ import { isAuthenticated } from "../../middlewares/isAuthenticated"
 
 
 export const filesController = (app: Elysia) => app
+    .use(isAuthenticated)
     .group('/files', (app) =>
-        app.use(isAuthenticated)
-        .post('/create', async ({ body }) => {
-            return {
-                body
+        app.guard({
+            beforeHandle({ set, userInfo }) {
+                if (!userInfo) {
+                    return (set.status = 'Unauthorized')
+                }
             }
-        }, {body: t.Object({userName: t.String({maxLength: 100}), password: t.String({minLength: 3, maxLength: 100})}), beforeHandle: ({set, userInfo}) => {
-            if (!userInfo) {
-                return (set.status = 'Unauthorized')
-            }
-        }})
+        },
+        (app) => app
+            .get('/create', async () => 'getttttt')
+            .get('/delete', () => 'delete')
+        )
     )
