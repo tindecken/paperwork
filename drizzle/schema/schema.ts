@@ -37,6 +37,7 @@ export const usersFiles = pgTable("usersFiles", {
   userId: integer("userId").references(() => users.id).notNull(),
   fileId: integer("fileId").references(() => files.id).notNull(),
   role: roleEnum("role").notNull(),
+  isSelectedAsDefault: boolean("isDefault").notNull().default(false),
   isActive: boolean("isActive").notNull().default(true),
 })
 

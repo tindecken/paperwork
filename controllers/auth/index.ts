@@ -1,10 +1,12 @@
 import {Elysia, t} from "elysia"
 import db from '../../drizzle/db'
-import { users } from '../../drizzle/schema/schema'
+import { users, usersFilesRelations } from '../../drizzle/schema/schema'
 import { hashPassword, comparePassword } from '../../libs/bcrypt'
 import * as jose from 'jose'
 import { eq } from 'drizzle-orm'
+import { createInsertSchema } from "drizzle-typebox"
 
+const createUser = createInsertSchema(users)
 
 export const auth = (app: Elysia) => app
     .group('/auth', (app) =>
@@ -65,7 +67,7 @@ export const auth = (app: Elysia) => app
             const { hash, salt } = await hashPassword(body.password)
             const registerUser = {
                 ...body,
-                hash: hash,
+                hash,
                 salt
             }
             const user = await db
@@ -74,11 +76,6 @@ export const auth = (app: Elysia) => app
                 .returning()
             return user
         }, {
-            body: t.Object({
-                name: t.String({maxLength: 150}),
-                userName: t.String({maxLength: 100}),
-                email: t.String({format: 'email', maxLength: 100}),
-                password: t.String({minLength: 3, maxLength: 100}),
-            })
+            body: t.Omit(t.Composite([createUser, t.Object({password: t.String({minLength: 3, maxLength: 100})})]), ['id','hash', 'salt']),
         })
     )
