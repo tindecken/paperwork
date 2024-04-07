@@ -1,20 +1,26 @@
 import { Elysia } from "elysia";
 import * as jose from 'jose'
+import { bearer } from '@elysiajs/bearer'
+import type { GenericResponseInterface } from "../models/GenericResponseInterface";
 
 export const isAuthenticated = (app: Elysia) => 
     app
-    .derive(async ({cookie: { access_token }, set}) => {
-        if (!access_token.value) {
+    .use(bearer())
+    .derive(async ({bearer, set}) => {
+        if (bearer == undefined) {
+            console.log('bearer', bearer)
             set.status = 401
-            return {
+            const res = {
                 success: false,
-                message: "Unauthorized",
+                message: "fsdfsdfsd",
                 data: null
             }
+            return res
         }
         let jwtDecoded: any = null
+        console.log('bejwtDecodedarer', jwtDecoded)
         try {
-            jwtDecoded = await jose.jwtVerify(access_token.value, new TextEncoder().encode(Bun.env.JWT_SECRET!))
+            jwtDecoded = await jose.jwtVerify(bearer, new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
         } catch (error) {
             console.log(error)
         }
@@ -29,7 +35,4 @@ export const isAuthenticated = (app: Elysia) =>
             message: "Unauthorized",
             data: null
         }        
-
-
-        
     })
