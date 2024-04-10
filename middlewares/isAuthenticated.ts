@@ -10,12 +10,14 @@ export const isAuthenticated = (app: Elysia) =>
         if (bearer == undefined) {
             console.log('bearer', bearer)
             set.status = 401
-            const res = {
+            const res: GenericResponseInterface = {
                 success: false,
                 message: "fsdfsdfsd",
                 data: null
             }
-            return res
+            return {
+                res
+            }
         }
         let jwtDecoded: any = null
         console.log('bejwtDecodedarer', jwtDecoded)

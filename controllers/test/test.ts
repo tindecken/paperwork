@@ -4,12 +4,15 @@ import type { GenericResponseInterface } from "../../models/GenericResponseInter
 
 export const testController = (app: Elysia) => app
     .group('/test', (app) =>
-        app.get('/response', () => {
+        app.derive(() => {
             const res: GenericResponseInterface = {
                 success: true,
                 message: "Test",
                 data: null
             }
-            return res
+            return {res}
+        })
+        .derive(() => {
+            return {}
         })
     )
