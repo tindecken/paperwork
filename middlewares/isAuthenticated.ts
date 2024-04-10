@@ -6,18 +6,9 @@ import type { GenericResponseInterface } from "../models/GenericResponseInterfac
 export const isAuthenticated = (app: Elysia) => 
     app
     .use(bearer())
-    .derive(async ({bearer, set}) => {
+    .derive(async ({bearer, set, error}) => {
         if (bearer == undefined) {
-            console.log('bearer', bearer)
-            set.status = 401
-            const res: GenericResponseInterface = {
-                success: false,
-                message: "fsdfsdfsd",
-                data: null
-            }
-            return {
-                res
-            }
+            return error(401, "Bearer not found")
         }
         let jwtDecoded: any = null
         console.log('bejwtDecodedarer', jwtDecoded)

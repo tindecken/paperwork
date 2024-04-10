@@ -1,0 +1,1 @@
+ALTER TABLE "usersFiles" ADD COLUMN "isDefault" boolean DEFAULT false NOT NULL;

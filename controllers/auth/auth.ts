@@ -5,7 +5,7 @@ import { hashPassword, comparePassword } from '../../libs/bcrypt'
 import * as jose from 'jose'
 import { eq } from 'drizzle-orm'
 import { createInsertSchema } from "drizzle-typebox"
-import type { TokenInterface } from "../../models/tokenInterface"
+import type { TokenInterface } from "../../models/TokenInterface"
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface"
 import {bearer} from "@elysiajs/bearer"
 
@@ -14,7 +14,8 @@ const createUser = createInsertSchema(users)
 export const auth = (app: Elysia) => app
     .use(bearer())
     .group('/auth', (app) =>
-        app.post('/login', async ({ body, set }) => {
+        app
+        .post('/login', async ({ body, set, error }) => {
             const user = await db
                 .select()
                 .from(users)
@@ -29,8 +30,7 @@ export const auth = (app: Elysia) => app
                 user[0].hash
             )
             if (!isPasswordValid) {
-                set.status = 401
-                return 'Invalid credentials'
+                return error(401, 'Invalid credentials')
             }
             const alg = 'HS256'
             const token = await new jose.SignJWT({ 
@@ -64,7 +64,12 @@ export const auth = (app: Elysia) => app
                 .insert(users)
                 .values(registerUser)
                 .returning()
-            return user
+            const res: GenericResponseInterface = {
+                success: true,
+                message: "Register success",
+                data: null
+            }
+            return res
         }, {
             body: t.Omit(t.Composite([createUser, t.Object({password: t.String({minLength: 3, maxLength: 100})})]), ['id','hash', 'salt']),
         })
@@ -112,5 +117,14 @@ export const auth = (app: Elysia) => app
                     }
                 }
             
+        })
+        .onError(({ error }: { error: any }) => {
+            console.log('error', error)
+            const res: GenericResponseInterface = {
+                success: false,
+                message: error.response || error.toString(),
+                data: null
+            }
+            return res
         })
     )
