@@ -15,14 +15,14 @@ export const auth = (app: Elysia) => app
     .use(bearer())
     .group('/auth', (app) =>
         app
-        .post('/login', async ({ body, set, error }) => {
+        .post('/login', async ({ body, set }) => {
             const user = await db
                 .select()
                 .from(users)
                 .where(eq(users.userName, body.userName))
             if (user.length === 0) {
                 set.status = 401
-                return 'User not found'
+                throw new Error('User not found')
             }
             const isPasswordValid = await comparePassword(
                 body.password,
@@ -30,7 +30,8 @@ export const auth = (app: Elysia) => app
                 user[0].hash
             )
             if (!isPasswordValid) {
-                return error(401, 'Invalid credentials')
+                set.status = 402
+                throw new Error('Invalid credentials')
             }
             const alg = 'HS256'
             const token = await new jose.SignJWT({ 
@@ -40,13 +41,18 @@ export const auth = (app: Elysia) => app
                 email: user[0].email,
                 maxEpx: Date.now() + 60 * 60 * 20000
             })
-            .setProtectedHeader({ alg: 'HS256' })
+            .setProtectedHeader({ alg })
             .setIssuedAt()
             .setExpirationTime('2h')
             .sign(new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
-            return {
-                'access_token': token
-            }
+            const res: GenericResponseInterface = {
+                success: true,
+                message: "Login success",
+                data: {
+                    token
+                }
+            } 
+            return res
         }, {
             body: t.Object({
                 userName: t.String({maxLength: 100}),
@@ -76,11 +82,7 @@ export const auth = (app: Elysia) => app
         .post('/refreshtoken', async ({bearer, set}) => {
             if (!bearer) {
                 set.status = 401
-                return {
-                    success: false,
-                    message: "Unauthorized",
-                    data: null
-                }
+                throw new Error("Unauthorized")
             }
             const payload = await jose.decodeJwt(bearer) as TokenInterface
                 const maxExpired = payload.maxEpx
@@ -88,11 +90,7 @@ export const auth = (app: Elysia) => app
                 console.log('Date.now()', Date.now())
                 if (Date.now() > maxExpired) {
                     set.status = 401
-                    return {
-                        success: false,
-                        message: "Unauthorized",
-                        data: null
-                    }
+                    throw new Error("Current token is already expired")
                 } else {
                     // Generate new token with the same maxExpired
                     const token = await new jose.SignJWT({ 
@@ -108,23 +106,15 @@ export const auth = (app: Elysia) => app
                     .setIssuedAt()
                     .setExpirationTime('2h')
                     .sign(new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
-                    return {
+                    const res: GenericResponseInterface = {
                         success: true,
                         message: "Refresh token success",
                         data: {
                             token
                         }
                     }
+                    return res
                 }
             
-        })
-        .onError(({ error }: { error: any }) => {
-            console.log('error', error)
-            const res: GenericResponseInterface = {
-                success: false,
-                message: error.response || error.toString(),
-                data: null
-            }
-            return res
         })
     )

@@ -1,19 +1,11 @@
 import {Elysia, t} from "elysia"
-import { isAuthenticated } from "../../middlewares/isAuthenticated"
+import { userInfo } from "../../middlewares/userInfo"
 
 
 export const filesController = (app: Elysia) => app
-    .use(isAuthenticated)
+    .use(userInfo)
     .group('/files', (app) =>
-        app.guard({
-            beforeHandle({ set, userInfo }) {
-                if (!userInfo) {
-                    return (set.status = 'Unauthorized')
-                }
-            }
-        },
-        (app) => app
-            .get('/create', async () => 'getttttt')
+        app.get('/create', async ({userInfo}) => userInfo)
             .get('/delete', () => 'delete')
         )
-    )
+    

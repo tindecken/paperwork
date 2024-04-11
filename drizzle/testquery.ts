@@ -4,8 +4,7 @@ import * as schema from './schema/schema'
 import {users} from './schema/schema'
 import { eq } from 'drizzle-orm'
 
-console.log('process.env.POSTGRES_CONNECTIONSTRING', process.env.POSTGRES_CONNECTIONSTRING)
-const queryClient = postgres(process.env.POSTGRES_CONNECTIONSTRING!)
+const queryClient = postgres(process.env['POSTGRES_CONNECTIONSTRING']!)
 
 const db = drizzle(queryClient, {schema})
 
@@ -15,5 +14,3 @@ const user = await db.query.users.findFirst({where: eq(users.id, 2),
             role: true
         }
     }}})
-
-console.log('user', user)

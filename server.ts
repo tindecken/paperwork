@@ -10,21 +10,21 @@ import type { GenericResponseInterface } from './models/GenericResponseInterface
 const app = new Elysia()
     .group('/api', (app) => 
         app.use(swagger())
-        .onError(({ error }: { error: any }) => {
-            console.log('error', error)
-            const res: GenericResponseInterface = {
-                success: false,
-                message: error.response || error.toString(),
-                data: null
-            }
-            return res
-        })
         .use(cors())
         .use(cookie())
         .use(auth)
         .use(filesController)
         .use(testController)
         .get('/', () => 'Welcome to api.')
+        .onError(({ error }: { error: any }) => {
+            console.log('error', error)
+            const res: GenericResponseInterface = {
+                success: false,
+                message: error.response || error.message,
+                data: null
+            }
+            return res
+        })
         
     )
     .listen(3000)
