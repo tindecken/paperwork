@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import * as jose from 'jose'
 import { bearer } from '@elysiajs/bearer'
+import type { TokenInterface } from "../models/TokenInterface";
 
 
 // This is a middleware that will be used to get the user info from the token, 
@@ -20,7 +21,7 @@ export const userInfo = (app: Elysia) =>
             console.log(error)
         }
         if (jwtDecoded != null) {
-            const userInfo = jwtDecoded.payload
+            const userInfo: TokenInterface = jwtDecoded.payload
             return {
                 userInfo
             }
