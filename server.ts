@@ -9,21 +9,33 @@ import type { GenericResponseInterface } from './models/GenericResponseInterface
 
 const app = new Elysia()
     .group('/api', (app) => 
-        app.use(swagger())
+        app
+        .use(swagger())
         .use(cors())
         .use(cookie())
         .use(auth)
         .use(filesController)
         .use(testController)
         .get('/', () => 'Welcome to api.')
-        .onError(({ error }: { error: any }) => {
-            console.log('error', error)
-            const res: GenericResponseInterface = {
-                success: false,
-                message: error.response || error.message,
-                data: null
+        .onError(({ code, error }: { code: any, error: any }) => {
+            console.log('Error Code', code)
+            switch(code) {
+                case 'VALIDATION':
+                    var errorValue = JSON.parse(error.message)
+                    const resValidation: GenericResponseInterface = {
+                        success: false,
+                        message: `Validation Error: [${errorValue.message} ${errorValue.property}]`,
+                        data: errorValue
+                    }
+                    return resValidation
+                default:
+                    const res: GenericResponseInterface = {
+                        success: false,
+                        message: error.response || error.message,
+                        data: null
+                    }
+                    return res
             }
-            return res
         })
         
     )
