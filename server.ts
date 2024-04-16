@@ -2,7 +2,7 @@ import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
 import { auth } from './controllers/auth/auth'
-import { filesController } from './controllers/files/files'
+import { filesController } from './controllers/files/index'
 import { cookie } from "@elysiajs/cookie";
 import { testController } from './controllers/test/test'
 import type { GenericResponseInterface } from './models/GenericResponseInterface'
@@ -16,9 +16,7 @@ const app = new Elysia()
         .use(auth)
         .use(filesController)
         .use(testController)
-        .get('/', () => 'Welcome to api.')
         .onError(({ code, error }: { code: any, error: any }) => {
-            console.log('Error Code', code)
             switch(code) {
                 case 'VALIDATION':
                     var errorValue = JSON.parse(error.message)
