@@ -28,7 +28,7 @@ const app = new Elysia()
                         data: errorValue
                     }
                     return resValidation
-                default:
+                default: // Unknown Error
                     const res: GenericResponseInterface = {
                         success: false,
                         message: error.response || error.message,

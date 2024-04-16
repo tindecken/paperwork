@@ -21,7 +21,7 @@ export const usersRelations = relations(users, ({many}) => ({
 
 export const files = pgTable("files", {
   id: serial("id").primaryKey().notNull(),
-  name: varchar("name", { length: 150 }).notNull(),
+  name: varchar("name", { length: 150 }).notNull().unique(),
   description: varchar("description", {length: 1000}),
   createdAt: timestamp("created_at", { precision: 6, withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { precision: 6, withTimezone: true })
