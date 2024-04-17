@@ -66,10 +66,9 @@ export const auth = (app: Elysia) => app
                 hash,
                 salt
             }
-            const user = await db
+            await db
                 .insert(users)
                 .values(registerUser)
-                .returning()
             const res: GenericResponseInterface = {
                 success: true,
                 message: "Register success",
@@ -86,8 +85,6 @@ export const auth = (app: Elysia) => app
             }
             const payload = await jose.decodeJwt(bearer) as TokenInterface
                 const maxExpired = payload.maxEpx
-                console.log('maxExpired', maxExpired)
-                console.log('Date.now()', Date.now())
                 if (Date.now() > maxExpired) {
                     set.status = 401
                     throw new Error("Current token is already expired")
