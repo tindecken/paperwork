@@ -17,6 +17,11 @@ export const deleteFile = (app: Elysia) =>
     .use(userInfo)
     .use(isAdmin)
     .delete('/delete/:id', async ({params: { id }, userInfo, set, isAdmin}) => {
+        console.log('isAdmin', isAdmin)
+        if(isAdmin === false) {
+            set.status = 401
+            throw new Error("Fobidden")
+        }
         // Delete userFile and file
         const userFile = await db.query.usersFiles.findFirst({
             where: and(eq(usersFiles.fileId, id), eq(usersFiles.userId, userInfo.userId))
