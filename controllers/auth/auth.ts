@@ -1,12 +1,12 @@
 import {Elysia, t} from "elysia"
 import db from '../../drizzle/db'
-import { users, usersFilesRelations } from '../../drizzle/schema/schema'
-import { hashPassword, comparePassword } from '../../libs/bcrypt'
+import {users} from '../../drizzle/schema/schema'
+import {comparePassword, hashPassword} from '../../libs/bcrypt'
 import * as jose from 'jose'
-import { eq } from 'drizzle-orm'
-import { createInsertSchema } from "drizzle-typebox"
-import type { TokenInterface } from "../../models/TokenInterface"
-import type { GenericResponseInterface } from "../../models/GenericResponseInterface"
+import {eq} from 'drizzle-orm'
+import {createInsertSchema} from "drizzle-typebox"
+import type {TokenInterface} from "../../models/TokenInterface"
+import type {GenericResponseInterface} from "../../models/GenericResponseInterface"
 import {bearer} from "@elysiajs/bearer"
 
 const createUser = createInsertSchema(users)
