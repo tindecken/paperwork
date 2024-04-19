@@ -127,6 +127,13 @@
       "when": 1713364398099,
       "tag": "0017_far_ultimates",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1713494068584,
+      "tag": "0018_absurd_speed_demon",
+      "breakpoints": true
     }
   ]
 }

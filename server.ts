@@ -3,6 +3,7 @@ import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
 import { auth } from './controllers/auth/auth'
 import { filesController } from './controllers/files/index'
+import { categoriesController } from './controllers/categories/index'
 import { cookie } from "@elysiajs/cookie";
 import { testController } from './controllers/test/test'
 import type { GenericResponseInterface } from './models/GenericResponseInterface'
@@ -15,6 +16,7 @@ const app = new Elysia()
         .use(cookie())
         .use(auth)
         .use(filesController)
+        .use(categoriesController)
         .use(testController)
         .onError(({ code, error }: { code: any, error: any }) => {
             switch(code) {
