@@ -1,1 +1,0 @@
-ALTER TABLE "documents" ALTER COLUMN "file" SET DATA TYPE text;

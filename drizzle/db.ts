@@ -1,8 +1,8 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
+import { drizzle } from 'drizzle-orm/libsql';
+import { createClient } from '@libsql/client';
 import * as schema from './schema/schema'
 
-const queryClient = postgres(process.env['POSTGRES_CONNECTIONSTRING'] as string)
+const queryClient = createClient({url:process.env['TURSO_DATABASE_URL']!, authToken: process.env['TURSO_AUTH_TOKEN']!})
 
 const db = drizzle(queryClient, {schema})
 export default db

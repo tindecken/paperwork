@@ -1,1 +1,0 @@
-ALTER TABLE "files" ADD CONSTRAINT "files_name_unique" UNIQUE("name");
