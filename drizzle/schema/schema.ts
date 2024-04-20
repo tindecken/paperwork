@@ -20,9 +20,11 @@ export const files = sqliteTable("files", {
    id: integer("id").primaryKey().notNull(),
    name: text("name", { length: 150 }).notNull().unique(),
    description: text("description", {length: 1000}),
+  isActive: integer("isActive", { mode: "boolean"}).notNull().default(true),
+  createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
    createdBy: text("createdBy", {length: 150}),
-   createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
-   updatedAt: text("updatedAt")
+   updatedAt: text("updatedAt"),
+   updatedBy: text("updatedBy", {length: 150})
 })
 
 export const filesRelations = relations(files, ({many}) => ({

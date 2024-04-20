@@ -1,7 +1,6 @@
 
 /*
-    Create new file record in table files
-    Create new record in usersFiles with: role = admin
+    Check user right and delete file
 */
 
 import { Elysia, t } from 'elysia'
@@ -20,15 +19,28 @@ export const deleteFile = (app: Elysia) =>
         console.log('isAdmin', isAdmin)
         if(isAdmin === false) {
             set.status = 401
-            throw new Error("Fobidden")
+            throw new Error("Forbidden")
         }
         // Delete userFile and file
         const userFile = await db.query.usersFiles.findFirst({
             where: and(eq(usersFiles.fileId, id), eq(usersFiles.userId, userInfo.userId))
         })
         if (userFile) {
+            if(userFile.role === 'admin') {
+                await db.query.usersFiles.deleteMany({
+                    where: and(eq(usersFiles.fileId, id), eq(usersFiles.userId, userInfo.userId))
+                })
+                await db.query.files.delete({
+                    where: eq(files.fileId, id)
+                })
+            }
             console.log('userFile', userFile)
-            return {userFile}
+            const res: GenericResponseInterface = {
+                success: true,
+                message: `Delete file ${userFile.fileId} successfully!`,
+                data: userFile
+            }
+            return res
         }
         throw new Error(`There is no file with id: ${id}`)
     }, {

@@ -10,7 +10,7 @@ export const userInfo = (app: Elysia) =>
     app
     .use(bearer())
     .derive(async ({bearer, set}) => {
-        if (bearer == undefined || bearer == null) {
+        if (bearer == undefined) {
             set.status = 401
             throw new Error("Bearer not found")
         }

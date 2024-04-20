@@ -19,9 +19,11 @@ CREATE TABLE `files` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text(150) NOT NULL,
 	`description` text(1000),
-	`createdBy` text(150),
+	`isActive` integer DEFAULT true NOT NULL,
 	`createdAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	`updatedAt` text
+	`createdBy` text(150),
+	`updatedAt` text,
+	`updatedBy` text(150)
 );
 --> statement-breakpoint
 CREATE TABLE `paperWorks` (
@@ -43,6 +45,17 @@ CREATE TABLE `paperWorksDocuments` (
 	FOREIGN KEY (`documentId`) REFERENCES `documents`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE TABLE `users` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`name` text(150) NOT NULL,
+	`userName` text(100) NOT NULL,
+	`email` text(100) NOT NULL,
+	`hash` text NOT NULL,
+	`salt` text NOT NULL,
+	`isActive` integer DEFAULT true NOT NULL,
+	`createdAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `usersFiles` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`userId` integer NOT NULL,
@@ -53,6 +66,7 @@ CREATE TABLE `usersFiles` (
 	FOREIGN KEY (`fileId`) REFERENCES `files`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-ALTER TABLE `users` RENAME COLUMN `created_at` TO `createdAt`;--> statement-breakpoint
 CREATE UNIQUE INDEX `categories_name_unique` ON `categories` (`name`);--> statement-breakpoint
-CREATE UNIQUE INDEX `files_name_unique` ON `files` (`name`);
+CREATE UNIQUE INDEX `files_name_unique` ON `files` (`name`);--> statement-breakpoint
+CREATE UNIQUE INDEX `users_userName_unique` ON `users` (`userName`);--> statement-breakpoint
+CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);

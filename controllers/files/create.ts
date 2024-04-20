@@ -32,7 +32,6 @@ export const createFile = (app: Elysia) =>
         userId: userInfo.userId,
         fileId: file[0].id,
         role: 'admin',
-        isSelectedAsDefault: true
     }
     await db.insert(usersFiles).values(newUserFile)
     const alg = 'HS256'

@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
 import { auth } from './controllers/auth/auth'
+import { filesController } from './controllers/files/index'
 import { cookie } from "@elysiajs/cookie";
 import type { GenericResponseInterface } from './models/GenericResponseInterface'
 
@@ -12,6 +13,7 @@ const app = new Elysia()
         .use(cors())
         .use(cookie())
         .use(auth)
+          .use(filesController)
         .onError(({ code, error }: { code: any, error: any }) => {
             switch(code) {
                 case 'VALIDATION':
