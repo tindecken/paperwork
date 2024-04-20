@@ -3,7 +3,6 @@ import { categories } from '../../drizzle/schema/schema'
 import { createInsertSchema } from "drizzle-typebox"
 import db from '../../drizzle/db'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
-import { isAdmin } from '../middlewares/isAdmin'
 
 const createCategorySchema = createInsertSchema(categories)
 export const createCategory = (app: Elysia) =>

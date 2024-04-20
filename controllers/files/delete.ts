@@ -5,44 +5,36 @@
 
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
-import { isAdmin } from '../../middlewares/isAdmin'
+import { isAdmin } from '../../libs/isAdmin'
 import { files, usersFiles } from '../../drizzle/schema/schema'
 import db from '../../drizzle/db'
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 
 export const deleteFile = (app: Elysia) =>
     app
     .use(userInfo)
-    .use(isAdmin)
-    .delete('/delete/:id', async ({params: { id }, userInfo, set, isAdmin}) => {
-        console.log('isAdmin', isAdmin)
-        if(isAdmin === false) {
-            set.status = 401
+    .delete('/delete/:id', async ({params: { id }, userInfo}) => {
+        const isAdminRights = await isAdmin(userInfo.userId, id)
+        if(!isAdminRights) {
             throw new Error("Forbidden")
         }
-        // Delete userFile and file
-        const userFile = await db.query.usersFiles.findFirst({
-            where: and(eq(usersFiles.fileId, id), eq(usersFiles.userId, userInfo.userId))
+        const file = await db.query.files.findFirst({
+            where: eq(files.id, id)
         })
-        if (userFile) {
-            if(userFile.role === 'admin') {
-                await db.query.usersFiles.deleteMany({
-                    where: and(eq(usersFiles.fileId, id), eq(usersFiles.userId, userInfo.userId))
-                })
-                await db.query.files.delete({
-                    where: eq(files.fileId, id)
-                })
-            }
-            console.log('userFile', userFile)
-            const res: GenericResponseInterface = {
-                success: true,
-                message: `Delete file ${userFile.fileId} successfully!`,
-                data: userFile
-            }
-            return res
+        if (!file) {
+            throw new Error("File not found")
         }
-        throw new Error(`There is no file with id: ${id}`)
+        await db.delete(usersFiles).where(eq(usersFiles.fileId, id)        )
+        await db.update(files)
+          .set({ isActive: false })
+          .where(eq(files.id, id))
+        const res: GenericResponseInterface = {
+          success: true,
+          message: `Delete file: ${file.name} successfully!`,
+          data: null
+        }
+        return res
     }, {
         params: t.Object({
             id: t.Numeric()
