@@ -65,6 +65,7 @@ export const paperWorks = sqliteTable("paperWorks", {
     name: text("name", { length: 150 }).notNull(),
     description: text("description", {length: 1000}),
     createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdBy: text("createdBy", {length: 150}),
     updatedAt: text("updatedAt"),
     updatedBy: text("updatedBy", {length: 150}),
 })
@@ -73,8 +74,10 @@ export const paperWorks = sqliteTable("paperWorks", {
 export const documents = sqliteTable("documents", {
     id: integer("id").primaryKey().notNull(),
     fileName: text("fileName").notNull(),
-    file: blob("file").notNull(),
+    fileSize: integer("fileSize").notNull(),
+    fileBlob: blob("fileBlob").notNull(),
     createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdBy: text("createdBy", {length: 150}),
 })
 
 export const paperWorksDocuments = sqliteTable("paperWorksDocuments", {

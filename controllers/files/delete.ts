@@ -25,7 +25,9 @@ export const deleteFile = (app: Elysia) =>
         if (!file) {
             throw new Error("File not found")
         }
+        // delete record in usersFiles
         await db.delete(usersFiles).where(eq(usersFiles.fileId, id)        )
+        // inactive file
         await db.update(files)
           .set({ isActive: false })
           .where(eq(files.id, id))
