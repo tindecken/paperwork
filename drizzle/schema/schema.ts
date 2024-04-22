@@ -52,17 +52,18 @@ export const usersFilesRelations = relations(usersFiles, ({one}) => ({
 
 export const categories = sqliteTable("categories", {
     id: integer("id").primaryKey().notNull(),
+    fileId: integer("fileId").references(() => files.id).notNull(),
     name: text("name", { length: 150 }).notNull().unique(),
     description: text("description", {length: 1000}),
     createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text("updatedAt"),
-    fileId: integer("fileId").references(() => files.id).notNull(),
+
 })
 
 export const paperWorks = sqliteTable("paperWorks", {
     id: integer("id").primaryKey().notNull(),
     categoryId: integer("categoryId").references(() => categories.id).notNull(),
-    name: text("name", { length: 150 }).notNull(),
+    name: text("name", { length: 150 }).unique().notNull(),
     description: text("description", {length: 1000}),
     createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
     createdBy: text("createdBy", {length: 150}),

@@ -1,10 +1,11 @@
 import { sql } from 'drizzle-orm'
-import { users, files, usersFiles } from './schema/schema'
+import {users, files, usersFiles, categories} from './schema/schema'
 import db from "./db.ts";
 
 db.run(sql`DELETE FROM usersFiles`)
 db.run(sql`DELETE FROM files`)
 db.run(sql`DELETE FROM users`)
+db.run(sql`DELETE FROM categories`)
 
 const newUser1: typeof users.$inferInsert = {
   name: 'tindecken',
@@ -40,6 +41,14 @@ const newUserFile2: typeof usersFiles.$inferInsert = {
   role: 'user'
 }
 await db.insert(usersFiles).values(newUserFile2)
+
+// create category
+const newCategory: typeof categories.$inferInsert = {
+  name: 'category1',
+  description: 'category1 description',
+  fileId: 1
+}
+await db.insert(categories).values(newCategory)
 
 
 
