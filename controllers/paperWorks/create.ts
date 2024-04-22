@@ -69,7 +69,7 @@ export const createPaperWork = (app: Elysia) =>
       })
 
     }, {
-      body: t.Omit(t.Composite([createPaperWorkSchema, t.Object({files: t.MaybeEmpty(t.Files())})]), ['id', 'categoryId', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy']),
+      body: t.Omit(t.Composite([createPaperWorkSchema, t.Object({files: t.Files()})]), ['id', 'categoryId', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy']),
       params: t.Object({
         categoryId: t.Numeric()
       })
