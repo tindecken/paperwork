@@ -5,6 +5,7 @@ import {documents, paperWorks, paperWorksDocuments, categories} from '../../driz
 import db from '../../drizzle/db'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
+import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
 
 
 const createPaperWorkSchema = createInsertSchema(paperWorks)
@@ -12,8 +13,6 @@ export const createPaperWork = (app: Elysia) =>
   app
     .use(userInfo)
     .post('/create/:categoryId', async ({body, params: { categoryId }, userInfo, set}) => {
-      console.log('files length:', body.files?.length)
-      console.log('files', body.files)
       const category = await db.query.categories.findFirst({
         where: eq(categories.id, categoryId)
       })
@@ -43,8 +42,8 @@ export const createPaperWork = (app: Elysia) =>
         const insertedPaperWork = await tx.insert(paperWorks).values(ppw).returning()
         // upload files
         for (const file of body.files) {
-          console.log('fileeee', file)
           const fileArrayBuffer = await file.arrayBuffer();
+          if (fileArrayBuffer.byteLength === 0) continue
           const blobData = new Uint8Array(fileArrayBuffer);
           const newDocument: typeof documents.$inferInsert = {
             fileSize: file.size,
@@ -67,7 +66,12 @@ export const createPaperWork = (app: Elysia) =>
             .values(ppwDocuments)
         }
       })
-
+      const res: GenericResponseInterface = {
+        success: true,
+        message: `Create paper work: ${body.name} successfully!`,
+        data: null
+      }
+      return res
     }, {
       body: t.Omit(t.Composite([createPaperWorkSchema, t.Object({files: t.Files()})]), ['id', 'categoryId', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy']),
       params: t.Object({

@@ -46,12 +46,12 @@ export const createFile = (app: Elysia) =>
     })
     .setProtectedHeader({ alg })
     .setIssuedAt()
-    .setExpirationTime('2h')
+    .setExpirationTime('23h')
     .sign(new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
     const res: GenericResponseInterface = {
         success: true,
         message: `Create file ${file[0].name} successfully!`,
-        data: { token }
+        data: { token, file }
     }
     return res
 }, {

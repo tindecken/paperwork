@@ -1,0 +1,52 @@
+import { Elysia, t } from 'elysia'
+import { userInfo } from '../../middlewares/userInfo'
+import { paperWorks} from '../../drizzle/schema/schema'
+import db from '../../drizzle/db'
+import {isAdmin} from "../../libs/isAdmin.ts";
+import {eq, sql} from "drizzle-orm";
+import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
+
+
+export const updatePaperWork = (app: Elysia) =>
+  app
+    .use(userInfo)
+    .put('/update/:paperworkId', async ({body, params: { paperworkId }, userInfo}) => {
+      const paperWork = await db
+        .select()
+        .from(paperWorks)
+        .where(eq(paperWorks.id, paperworkId))
+        .limit(1)
+        .execute()
+      console.log('paperwork', paperWork)
+      if (paperWork.length === 0) {
+        throw new Error("Paper work not found")
+      }
+      const isAdminRights = await isAdmin(userInfo.userId, userInfo.fileId!)
+      if(!isAdminRights) {
+        throw new Error("Forbidden")
+      }
+      const updatedPaperWork = await db
+        .update(paperWorks)
+        .set({
+          name: body.name,
+          description: body.description,
+          updatedAt: sql`CURRENT_TIMESTAMP`,
+          updatedBy: userInfo.userName
+        })
+        .where(eq(paperWorks.id, paperworkId))
+        .returning()
+      const res: GenericResponseInterface = {
+        success: true,
+        message: `Update paper work successfully!`,
+        data: updatedPaperWork
+      }
+      return res
+    }, {
+      body: t.Object({
+        name: t.String(),
+        description: t.String(),
+      }),
+      params: t.Object({
+        paperworkId: t.Numeric()
+      })
+    })
