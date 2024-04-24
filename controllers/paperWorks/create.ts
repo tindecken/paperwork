@@ -7,7 +7,6 @@ import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
 
-
 const createPaperWorkSchema = createInsertSchema(paperWorks)
 export const createPaperWork = (app: Elysia) =>
   app
@@ -27,9 +26,11 @@ export const createPaperWork = (app: Elysia) =>
         set.status = 400
         throw new Error('You can only upload up to 20 files at a time!')
       }
-      for (const file of body.files) {
-        if (file.size > 1024 * 1024 * 10) {
-          throw new Error(`File ${file.name} with file size ${file.size} is greater than 10MB! Please upload a smaller file.`)
+      if (body.files) {
+        for (const file of body.files) {
+          if (file.size > 1024 * 1024 * 10) {
+            throw new Error(`File ${file.name} with file size ${file.size} is greater than 10MB! Please upload a smaller file.`)
+          }
         }
       }
       await db.transaction(async (tx) => {
@@ -41,29 +42,31 @@ export const createPaperWork = (app: Elysia) =>
         }
         const insertedPaperWork = await tx.insert(paperWorks).values(ppw).returning()
         // upload files
-        for (const file of body.files) {
-          const fileArrayBuffer = await file.arrayBuffer();
-          if (fileArrayBuffer.byteLength === 0) continue
-          const blobData = new Uint8Array(fileArrayBuffer);
-          const newDocument: typeof documents.$inferInsert = {
-            fileSize: file.size,
-            fileName: file.name,
-            fileBlob: blobData,
-            createdBy: userInfo.userName
+        if (body.files) {
+          for (const file of body.files) {
+            const fileArrayBuffer = await file.arrayBuffer();
+            if (fileArrayBuffer.byteLength === 0) throw new Error(`File ${file.name} is empty!`)
+            const blobData = new Uint8Array(fileArrayBuffer);
+            const newDocument: typeof documents.$inferInsert = {
+              fileSize: file.size,
+              fileName: file.name,
+              fileBlob: blobData,
+              createdBy: userInfo.userName
+            }
+            const uploadedFile = await tx
+              .insert(documents)
+              .values(newDocument)
+              .returning()
+            //mapping paperwork with documents
+            const ppwDocuments: typeof paperWorksDocuments.$inferInsert = {
+              paperWorkId: insertedPaperWork[0].id,
+              documentId: uploadedFile[0].id,
+              createdBy: userInfo.userName
+            }
+            await tx
+              .insert(paperWorksDocuments)
+              .values(ppwDocuments)
           }
-          const uploadedFile = await tx
-            .insert(documents)
-            .values(newDocument)
-            .returning()
-
-          //mapping paperwork with documents
-          const ppwDocuments: typeof paperWorksDocuments.$inferInsert = {
-            paperWorkId: insertedPaperWork[0].id,
-            documentId: uploadedFile[0].id
-          }
-          await tx
-            .insert(paperWorksDocuments)
-            .values(ppwDocuments)
         }
       })
       const res: GenericResponseInterface = {
@@ -73,7 +76,7 @@ export const createPaperWork = (app: Elysia) =>
       }
       return res
     }, {
-      body: t.Omit(t.Composite([createPaperWorkSchema, t.Object({files: t.Files()})]), ['id', 'categoryId', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy']),
+      body: t.Omit(t.Composite([createPaperWorkSchema, t.Object({files: t.Optional(t.Files())})]), ['id', 'categoryId', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy']),
       params: t.Object({
         categoryId: t.Numeric()
       })

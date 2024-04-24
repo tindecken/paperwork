@@ -37,6 +37,8 @@ export const usersFiles = sqliteTable("usersFiles", {
   fileId: integer("fileId").references(() => files.id).notNull(),
   role: text("role", {enum: ["admin", "user"]}).notNull(),
   isActive: integer("isActive", { mode: "boolean"}).notNull().default(true),
+  createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdBy: text("createdBy", {length: 150}),
 })
 
 export const usersFilesRelations = relations(usersFiles, ({one}) => ({
@@ -85,4 +87,6 @@ export const paperWorksDocuments = sqliteTable("paperWorksDocuments", {
     id: integer("id").primaryKey().notNull(),
     paperWorkId: integer("paperWorkId").references(() => paperWorks.id).notNull(),
     documentId: integer("documentId").references(() => documents.id).notNull(),
+    createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdBy: text("createdBy", {length: 150})
 })
