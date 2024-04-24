@@ -67,6 +67,8 @@ export const paperWorks = sqliteTable("paperWorks", {
     categoryId: integer("categoryId").references(() => categories.id).notNull(),
     name: text("name", { length: 150 }).unique().notNull(),
     description: text("description", {length: 1000}),
+    date: text("date"),
+    price: text("price"),
     createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
     createdBy: text("createdBy", {length: 150}),
     updatedAt: text("updatedAt"),
@@ -76,17 +78,10 @@ export const paperWorks = sqliteTable("paperWorks", {
 // document can be an image or a pdf, excel, word or any other format
 export const documents = sqliteTable("documents", {
     id: integer("id").primaryKey().notNull(),
+    paperWorkId: integer("paperWorkId").references(() => paperWorks.id).notNull(),
     fileName: text("fileName").notNull(),
     fileSize: integer("fileSize").notNull(),
     fileBlob: blob("fileBlob").notNull(),
     createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
     createdBy: text("createdBy", {length: 150}),
-})
-
-export const paperWorksDocuments = sqliteTable("paperWorksDocuments", {
-    id: integer("id").primaryKey().notNull(),
-    paperWorkId: integer("paperWorkId").references(() => paperWorks.id).notNull(),
-    documentId: integer("documentId").references(() => documents.id).notNull(),
-    createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
-    createdBy: text("createdBy", {length: 150})
 })

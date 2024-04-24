@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo.ts'
-import { paperWorks} from '../../drizzle/schema/schema.ts'
+import { paperWorks, paperWorksDocuments} from '../../drizzle/schema/schema.ts'
 import db from '../../drizzle/db.ts'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq, sql} from "drizzle-orm";
@@ -10,7 +10,7 @@ import type {GenericResponseInterface} from "../../models/GenericResponseInterfa
 export const deletePaperWork = (app: Elysia) =>
   app
     .use(userInfo)
-    .delete('/update/:paperworkId', async ({body, params: { paperworkId }, userInfo}) => {
+    .delete('/update/:paperworkId', async ({params: { paperworkId }, userInfo}) => {
       const paperWork = await db
         .select()
         .from(paperWorks)
@@ -28,6 +28,19 @@ export const deletePaperWork = (app: Elysia) =>
       await db
         .delete(paperWorks)
         .where(eq(paperWorks.id, paperworkId))
+      // get all documentId associated with this paperwork
+      const documentIds = await db.query.paperWorksDocuments.findMany({
+        columns: { id: true},
+        where: eq(paperWorksDocuments.paperWorkId, paperworkId)
+      })
+      console.log('documentIds', documentIds)
+      // delete records in documents
+
+      // delete records in paperWorksDocuments
+      await db
+        .delete(paperWorksDocuments)
+        .where(eq(paperWorksDocuments.paperWorkId, paperworkId))
+      // delete records in documents
       const res: GenericResponseInterface = {
         success: true,
         message: 'Delete paper work successfully!',
