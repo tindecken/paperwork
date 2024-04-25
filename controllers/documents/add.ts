@@ -3,7 +3,7 @@ import { Elysia, t } from "elysia";
 import { userInfo } from "../../middlewares/userInfo";
 import { documents, paperWorks } from "../../drizzle/schema/schema";
 import db from "../../drizzle/db";
-import {eq, sql} from "drizzle-orm";
+import {eq} from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 import { isAdmin } from "../../libs/isAdmin";
 export const addDocuments = (app: Elysia) =>

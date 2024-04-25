@@ -3,7 +3,7 @@ import { userInfo } from '../../middlewares/userInfo.ts'
 import { documents, paperWorks } from '../../drizzle/schema/schema.ts'
 import db from '../../drizzle/db.ts'
 import {isAdmin} from "../../libs/isAdmin.ts";
-import {eq, sql} from "drizzle-orm";
+import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
 
 

@@ -3,13 +3,13 @@ import { Elysia, t } from "elysia";
 import { userInfo } from "../../middlewares/userInfo";
 import { documents, paperWorks } from "../../drizzle/schema/schema";
 import db from "../../drizzle/db";
-import {eq, sql} from "drizzle-orm";
+import {eq} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 export const removeDocuments = (app: Elysia) =>
   app.use(userInfo).delete(
     "/remove",
-    async ({ body, userInfo, set }) => {
+    async ({ body, userInfo }) => {
       const isAdminRights = await isAdmin(userInfo.userId, userInfo.fileId!);
       if (!isAdminRights) {
         throw new Error("Forbidden");
