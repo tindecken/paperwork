@@ -29,6 +29,7 @@ export const files = sqliteTable("files", {
 
 export const filesRelations = relations(files, ({many}) => ({
   usersFiles: many(usersFiles),
+  categories: many(categories),
 }))
 
 export const usersFiles = sqliteTable("usersFiles", {
@@ -59,8 +60,15 @@ export const categories = sqliteTable("categories", {
     description: text("description", {length: 1000}),
     createdAt: text("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text("updatedAt"),
-
 })
+
+export const categoriesRelations = relations(categories, ({one, many}) => ({
+  files: one(files, {
+    fields: [categories.fileId],
+    references: [files.id],
+  }),
+  paperWorks: many(paperWorks),
+}))
 
 export const paperWorks = sqliteTable("paperWorks", {
     id: integer("id").primaryKey().notNull(),
@@ -74,6 +82,14 @@ export const paperWorks = sqliteTable("paperWorks", {
     updatedAt: text("updatedAt"),
     updatedBy: text("updatedBy", {length: 150}),
 })
+
+export const paperWorksRelations = relations(paperWorks, ({one, many}) => ({
+  categories: one(categories, {
+    fields: [paperWorks.categoryId],
+    references: [categories.id],
+  }),
+  documents: many(documents),
+}))
 
 // document can be an image or a pdf, excel, word or any other format
 export const documents = sqliteTable("documents", {
