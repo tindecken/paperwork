@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo.ts'
-import { paperWorks } from '../../drizzle/schema/schema.ts'
+import { documents, paperWorks } from '../../drizzle/schema/schema.ts'
 import db from '../../drizzle/db.ts'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq, sql} from "drizzle-orm";
@@ -10,14 +10,13 @@ import type {GenericResponseInterface} from "../../models/GenericResponseInterfa
 export const deletePaperWork = (app: Elysia) =>
   app
     .use(userInfo)
-    .delete('/update/:paperworkId', async ({params: { paperworkId }, userInfo}) => {
+    .delete('/delete/:paperworkId', async ({params: { paperworkId }, userInfo}) => {
       const paperWork = await db
         .select()
         .from(paperWorks)
         .where(eq(paperWorks.id, paperworkId))
         .limit(1)
         .execute()
-      console.log('paperwork', paperWork)
       if (paperWork.length === 0) {
         throw new Error("Paper work not found")
       }
@@ -25,13 +24,17 @@ export const deletePaperWork = (app: Elysia) =>
       if(!isAdminRights) {
         throw new Error("Forbidden")
       }
+      // delete paperwork
       await db
         .delete(paperWorks)
         .where(eq(paperWorks.id, paperworkId))
-      // get all documentId associated with this paperwork
+      // delete document
+      await db
+        .delete(documents)
+        .where(eq(documents.paperWorkId, paperworkId))
       const res: GenericResponseInterface = {
         success: true,
-        message: 'Delete paper work successfully!',
+        message: `Delete paper work ${paperWork[0].name} successfully!`,
         data: null
       }
       return res

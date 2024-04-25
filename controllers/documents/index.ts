@@ -1,7 +1,7 @@
-import { Elysia } from 'elysia'
-import { uploadDocument } from './upload'
+import { Elysia } from "elysia";
+import { addDocuments } from "./add";
+import { removeDocuments } from "./remove";
 
-// Notes: deleteFile not imported for safety reasons
-
-export const documentsController = new Elysia({ prefix: '/documents'})
-    .use(uploadDocument)
+export const documentsController = new Elysia({ prefix: "/documents" })
+  .use(addDocuments)
+  .use(removeDocuments);
