@@ -4,7 +4,7 @@ import { paperWorks} from '../../drizzle/schema/schema'
 import db from '../../drizzle/db'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq, sql} from "drizzle-orm";
-import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
+import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 
 
 export const updatePaperWork = (app: Elysia) =>
@@ -30,6 +30,8 @@ export const updatePaperWork = (app: Elysia) =>
         .set({
           name: body.name,
           description: body.description,
+          date: body.date,
+          price: body.price,
           updatedAt: sql`CURRENT_TIMESTAMP`,
           updatedBy: userInfo.userName
         })
@@ -43,8 +45,10 @@ export const updatePaperWork = (app: Elysia) =>
       return res
     }, {
       body: t.Object({
-        name: t.String(),
-        description: t.String(),
+        name: t.Optional(t.String()),
+        description: t.Optional(t.String()),
+        date: t.Optional(t.String()),
+        price: t.Optional(t.String()),
       }),
       params: t.Object({
         paperworkId: t.Numeric()

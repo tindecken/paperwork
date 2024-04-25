@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { createInsertSchema } from "drizzle-typebox"
-import {documents, paperWorks, paperWorksDocuments, categories} from '../../drizzle/schema/schema'
+import {documents, paperWorks, categories} from '../../drizzle/schema/schema'
 import db from '../../drizzle/db'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
@@ -38,6 +38,8 @@ export const createPaperWork = (app: Elysia) =>
           categoryId: categoryId,
           name: body.name,
           description: body.description,
+          date: body.date,
+          price: body.price,
           createdBy: userInfo.userName
         }
         const insertedPaperWork = await tx.insert(paperWorks).values(ppw).returning()
@@ -48,24 +50,16 @@ export const createPaperWork = (app: Elysia) =>
             if (fileArrayBuffer.byteLength === 0) throw new Error(`File ${file.name} is empty!`)
             const blobData = new Uint8Array(fileArrayBuffer);
             const newDocument: typeof documents.$inferInsert = {
+              paperWorkId: insertedPaperWork[0].id,
               fileSize: file.size,
               fileName: file.name,
               fileBlob: blobData,
               createdBy: userInfo.userName
             }
-            const uploadedFile = await tx
+            await tx
               .insert(documents)
               .values(newDocument)
               .returning()
-            //mapping paperwork with documents
-            const ppwDocuments: typeof paperWorksDocuments.$inferInsert = {
-              paperWorkId: insertedPaperWork[0].id,
-              documentId: uploadedFile[0].id,
-              createdBy: userInfo.userName
-            }
-            await tx
-              .insert(paperWorksDocuments)
-              .values(ppwDocuments)
           }
         }
       })
