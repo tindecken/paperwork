@@ -1,11 +1,12 @@
 import { sql } from 'drizzle-orm'
-import {users, files, usersFiles, categories} from './schema/schema'
+import {users, files, usersFiles, categories, paperWorks} from './schema/schema'
 import db from "./db.ts";
 
 db.run(sql`DELETE FROM usersFiles`)
 db.run(sql`DELETE FROM files`)
 db.run(sql`DELETE FROM users`)
 db.run(sql`DELETE FROM categories`)
+db.run(sql`DELETE FROM paperWorks`)
 
 const newUser1: typeof users.$inferInsert = {
   name: 'tindecken',
@@ -43,12 +44,39 @@ const newUserFile2: typeof usersFiles.$inferInsert = {
 await db.insert(usersFiles).values(newUserFile2)
 
 // create category
-const newCategory: typeof categories.$inferInsert = {
+const newCategory1: typeof categories.$inferInsert = {
   name: 'category1',
   description: 'category1 description',
   fileId: 1
 }
-await db.insert(categories).values(newCategory)
+await db.insert(categories).values(newCategory1)
 
+const newCategory2: typeof categories.$inferInsert = {
+  name: 'category2',
+  description: 'category2 description',
+  fileId: 1
+}
+await db.insert(categories).values(newCategory2)
 
+// create papaerWorkds
+const paperWork1: typeof paperWorks.$inferInsert = {
+  name: 'paperWork1',
+  description: 'paperWork1 description',
+  categoryId: 1
+}
+await db.insert(paperWorks).values(paperWork1)
+
+const paperWork2: typeof paperWorks.$inferInsert = {
+  name: 'paperWork2',
+  description: 'paperWork2 description',
+  categoryId: 2
+}
+await db.insert(paperWorks).values(paperWork2)
+
+const paperWork3: typeof paperWorks.$inferInsert = {
+  name: 'paperWork3',
+  description: 'paperWork3 description',
+  categoryId: 1
+}
+await db.insert(paperWorks).values(paperWork3)
 

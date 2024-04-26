@@ -21,6 +21,7 @@ export const getPaperWorks = (app: Elysia) =>
             throw new Error('No file is selected')
         }
         const filePaperWorks = await db.query.files.findFirst({
+            offset: 1,
             where: eq(files.id, 1),
             with: {
                 categories: {
