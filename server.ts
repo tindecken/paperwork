@@ -6,18 +6,20 @@ import { filesController } from './controllers/files/index'
 import { cookie } from "@elysiajs/cookie";
 import type { GenericResponseInterface } from './models/GenericResponseInterface'
 import { documentsController } from "./controllers/documents";
-import {paperWorksController} from "./controllers/paperWorks";
+import { paperWorksController } from "./controllers/paperWorks";
 
 const app = new Elysia()
     .group('/api', (app) => 
         app
-        .use(swagger())
+        .use(swagger({
+            provider: 'swagger-ui',
+        }))
         .use(cors())
         .use(cookie())
         .use(auth)
         .use(documentsController)
-          .use(filesController)
-          .use(paperWorksController)
+        .use(filesController)
+        .use(paperWorksController)
         .onError(({ code, error }: { code: any, error: any }) => {
             switch(code) {
                 case 'VALIDATION':
