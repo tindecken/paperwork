@@ -6,7 +6,7 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { isAdmin } from '../../libs/isAdmin'
-import { files, usersFiles } from '../../drizzle/schema/schema'
+import { files, usersFiles } from '../../drizzle/schema'
 import db from '../../drizzle/db'
 import { eq } from 'drizzle-orm'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';

@@ -1,7 +1,7 @@
 // remove documents from paper work
 import { Elysia, t } from "elysia";
 import { userInfo } from "../../middlewares/userInfo";
-import { documents, paperWorks } from "../../drizzle/schema/schema";
+import { documents, paperWorks } from "../../drizzle/schema";
 import db from "../../drizzle/db";
 import {eq} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";

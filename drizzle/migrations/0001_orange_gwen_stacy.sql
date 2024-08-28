@@ -1,1 +1,0 @@
-ALTER TABLE documents ADD `createdBy` text(150);

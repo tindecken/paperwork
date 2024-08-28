@@ -1,10 +1,16 @@
-import { defineConfig } from 'drizzle-kit'
-console.log('TURSO_DATABASE_URL', process.env['TURSO_DATABASE_URL'])
+import { config } from 'dotenv';
+import { defineConfig } from 'drizzle-kit';
+
+config({ path: '.env' });
+
 export default defineConfig({
-  schema: './drizzle/schema/schema.ts',
-  driver: 'better-sqlite',
-  out: "./drizzle/migrations",
+  schema: '.schema.ts',
+  out: './migrations',
+  dialect: 'sqlite',
+  driver: 'turso',
   dbCredentials: {
-    url: process.env['TURSO_DATABASE_URL']!
-  }
-})
+    url: 'file:mypaperwork.db',
+    // url: process.env.TURSO_CONNECTION_URL!,
+    // authToken: process.env.TURSO_AUTH_TOKEN!,
+  },
+});

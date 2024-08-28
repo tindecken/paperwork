@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
-import { paperWorks} from '../../drizzle/schema/schema'
+import { paperWorks} from '../../drizzle/schema.ts'
 import db from '../../drizzle/db'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq, sql} from "drizzle-orm";

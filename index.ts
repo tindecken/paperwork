@@ -1,37 +1,33 @@
-import { Elysia } from 'elysia'
-import { derriveTest } from './derriveTest'
+import { Elysia } from 'elysia';
+import { logger } from '@grotto/logysia';
+import { securitySetup } from './startup/security'
+import { docsSetup } from './startup/docs';
+import { hooksSetup } from './startup/hooks';
+import { usersController } from './controllers/users.controller';
+import { staticDataController } from './controllers/staticdata/static-data.controller';
 
-const a = () => 'hello'
-class Logger {
-    log(message: string){
-        console.log('message', message)
-    }
-}
+const PORT = process.env.PORT || 3000;
+export const app = new Elysia();
 
-const app = new Elysia()
-    .decorate('logger', new Logger())
-    .state('thisisstateStoretoStore', 'haha aa') //==> using in store
-    .use(derriveTest)
-    .get('/', ({store: {counter}, aaa}) => {
-        console.log('counter', counter)
-        console.log('aaa', aaa)
-    })
-    .onError(({code}) => {
-        if (code === 'NOT_FOUND')
-            return 'Route not found :('
-    })
-    .get('/a', a)
-    .get('/error', ({error, path, set}) => {
-        set.headers['x-powered-by'] = 'Elysia'
-        set.headers['a']='b'
-        error('Not Implemented', `Not implement: ${path}`)
-    })
-    .get('/headers', ({headers}) => headers)
-    .get('/store', ({store}) => store.thisisstateStoretoStore)
-    .get('/decorate',({logger}) => {
-        logger.log('hello decorate')
-        return 'hello decorate'
-    })
-
-app.listen(3000)
-
+app
+    .use(securitySetup)
+    .use(docsSetup)
+    .use(logger({
+        logIP: false,
+        writer: {
+            write(msg: string) {
+                console.log(msg)
+            }
+        }
+    }))
+    .use(hooksSetup)
+    .get('/', () => 'Hello Bun.js!')
+    .group('/api', (app: Elysia) =>
+            app
+                .use(usersController)
+                .use(staticDataController)
+        // and other controllers
+    )
+    .listen(PORT, () => {
+        console.log(`🦊 Elysia is running at ${app.server?.hostname}:${PORT}`);
+    });

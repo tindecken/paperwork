@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { categories, usersFiles } from '../../drizzle/schema/schema'
+import { categories, usersFiles } from '../../drizzle/schema'
 import { createInsertSchema } from "drizzle-typebox"
 import db from '../../drizzle/db'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';

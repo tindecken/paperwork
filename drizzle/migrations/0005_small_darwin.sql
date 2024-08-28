@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX `paperWorks_name_unique` ON `paperWorks` (`name`);

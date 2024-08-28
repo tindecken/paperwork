@@ -1,16 +1,16 @@
 import { and, eq } from 'drizzle-orm'
-import db from '../drizzle/db'
-import { usersFiles } from "../drizzle/schema/schema";
+import { db } from '../drizzle/index'
+import { usersFilesTable } from "../drizzle/schema";
 
 
 // Getting admin rights
 export const isAdmin = async (userId: number, fileId: number) => {
   const record = await db
-    .query.usersFiles.findFirst({
+    .query.usersFilesTable.findFirst({
       where: and(
-        eq(usersFiles.userId, userId),
-        eq(usersFiles.fileId, fileId),
-        eq(usersFiles.role, 'admin')
+        eq(usersFilesTable.userId, userId),
+        eq(usersFilesTable.fileId, fileId),
+        eq(usersFilesTable.role, 'admin')
       ),
     })
   if (record) {

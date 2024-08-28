@@ -1,82 +1,77 @@
-import { sql } from 'drizzle-orm'
-import {users, files, usersFiles, categories, paperWorks} from './schema/schema'
-import db from "./db.ts";
+import { db } from './index';
+import { ulid } from 'ulid';
+import { usersTable, InsertUser, usersFilesTable, usersSettingsTable, settingsTable, documentsTable, categoriesTable, filesTable, InsertFile, InsertUsersFiles } from './schema';
 
-db.run(sql`DELETE FROM usersFiles`)
-db.run(sql`DELETE FROM files`)
-db.run(sql`DELETE FROM users`)
-db.run(sql`DELETE FROM categories`)
-db.run(sql`DELETE FROM paperWorks`)
+// truncate table before inserting new users
+await db.delete(usersFilesTable);
+await db.delete(usersTable);
+await db.delete(usersSettingsTable);
+await db.delete(settingsTable);
+await db.delete(documentsTable);
+await db.delete(categoriesTable);
+await db.delete(filesTable);
 
-const newUser1: typeof users.$inferInsert = {
-  name: 'tindecken',
-  email: 'tindecken@gmail.comm',
+const hashedPassword = await Bun.password.hash('rivaldo');
+const user: InsertUser = {
+  id: ulid(),
+  name: 'Tindecken',
   userName: 'tindecken',
-  hash: '13350f29e586ee4d86b1c9f4e3c8900ea704c15b202bbadba1a98e916072c7c150087f3ba1e1e47ae001c58fe481a1aa1c01deeb1dd2462ad2d8bd88dc16a10d',
-  salt: 'ab921a2176a793495cd8a0868aab262f'
-}
-await db.insert(users).values(newUser1)
+  email: 'tindecken@gmail.com',
+  password: hashedPassword,
+  systemRole: 'admin',
+  isDeleted: 0,
+};
 
-const newFile1: typeof files.$inferInsert = {
-  name: 'file1',
-  description: 'file1 description',
-  createdBy: 'tindecken'
-}
-await db.insert(files).values(newFile1)
-const newUserFile1: typeof usersFiles.$inferInsert = {
-  userId: 1,
-  fileId: 1,
-  role: 'admin'
-}
-await db.insert(usersFiles).values(newUserFile1)
+const tindeckenUser = await db.insert(usersTable).values(user).returning();
 
-const newFile2: typeof files.$inferInsert = {
-  name: 'file2',
-  description: 'file2 description',
-  createdBy: 'tindecken'
-}
-await db.insert(files).values(newFile2)
-const newUserFile2: typeof usersFiles.$inferInsert = {
-  userId: 1,
-  fileId: 2,
-  role: 'user'
-}
-await db.insert(usersFiles).values(newUserFile2)
+const file1OfUser1: InsertFile = {
+  id: ulid(),
+  name: 'File 1',
+  description: 'This is the first file of Tindecken',
+  createdBy: tindeckenUser[0].userName,
+};
 
-// create category
-const newCategory1: typeof categories.$inferInsert = {
-  name: 'category1',
-  description: 'category1 description',
-  fileId: 1
-}
-await db.insert(categories).values(newCategory1)
+const file1Id = await db.insert(filesTable).values(file1OfUser1).returning();
 
-const newCategory2: typeof categories.$inferInsert = {
-  name: 'category2',
-  description: 'category2 description',
-  fileId: 1
-}
-await db.insert(categories).values(newCategory2)
+const userFile1: InsertUsersFiles = {
+  id: ulid(),
+  userId: tindeckenUser[0].id,
+  fileId: file1Id[0].id,
+  role: 'admin',
+  isSelected: 0,
+  createdBy: tindeckenUser[0].userName,
+};
 
-// create papaerWorkds
-const paperWork1: typeof paperWorks.$inferInsert = {
-  name: 'paperWork1',
-  description: 'paperWork1 description',
-  categoryId: 1
-}
-await db.insert(paperWorks).values(paperWork1)
+await db.insert(usersFilesTable).values(userFile1);
 
-const paperWork2: typeof paperWorks.$inferInsert = {
-  name: 'paperWork2',
-  description: 'paperWork2 description',
-  categoryId: 2
-}
-await db.insert(paperWorks).values(paperWork2)
+const file2OfUser1: InsertFile = {
+  id: ulid(),
+  name: 'File 2',
+  description: 'This is the second file of Tindecken',
+  createdBy: tindeckenUser[0].userName,
+};
+const file2Id = await db.insert(filesTable).values(file2OfUser1).returning();
 
-const paperWork3: typeof paperWorks.$inferInsert = {
-  name: 'paperWork3',
-  description: 'paperWork3 description',
-  categoryId: 1
-}
-await db.insert(paperWorks).values(paperWork3)
+const userFile2: InsertUsersFiles = {
+  id: ulid(),
+  userId: tindeckenUser[0].id,
+  fileId: file2Id[0].id,
+  role: 'admin',
+  isSelected: 0,
+  createdBy: tindeckenUser[0].userName,
+};
+await db.insert(usersFilesTable).values(userFile2);
 
+const user2: InsertUser = {
+  id: ulid(),
+  name: 'Hoang Nguyen',
+  userName: 'hoangnguyen',
+  email: 'hoangnguyen@gmail.com',
+  password: hashedPassword,
+  systemRole: 'user ',
+  isDeleted: 0,
+};
+
+const hoangnguyenUser = await db.insert(usersTable).values(user2).returning();
+console.log(`User Tindecken's ID: ${tindeckenUser[0].id}`);
+console.log(`User Hoang Nguyen's ID: ${hoangnguyenUser[0].id}`);

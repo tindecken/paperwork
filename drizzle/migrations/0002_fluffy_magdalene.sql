@@ -1,1 +1,0 @@
-ALTER TABLE documents ADD `fileSize` integer NOT NULL;

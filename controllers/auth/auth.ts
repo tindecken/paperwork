@@ -1,6 +1,6 @@
 import {Elysia, t} from "elysia"
 import db from '../../drizzle/db'
-import {users} from '../../drizzle/schema/schema'
+import {users} from '../../drizzle/schema'
 import {comparePassword, hashPassword} from '../../libs/bcrypt'
 import * as jose from 'jose'
 import {eq} from 'drizzle-orm'
