@@ -4,8 +4,8 @@ import { defineConfig } from 'drizzle-kit';
 config({ path: '.env' });
 
 export default defineConfig({
-  schema: '.schema.ts',
-  out: './migrations',
+  schema: './drizzle/schema.ts',
+  out: './drizzle/migrations',
   dialect: 'sqlite',
   driver: 'turso',
   dbCredentials: {

@@ -5,7 +5,7 @@ import { deletePaperWork } from './delete'
 
 // Notes: deleteFile not imported for safety reasons
 
-export const paperWorksController = new Elysia({ prefix: '/paperworks'})
+export const paperworksController = new Elysia({ prefix: '/paperworks'})
   .use(createPaperWork)
   .use(updatePaperWork)
   .use(deletePaperWork)

@@ -9,17 +9,17 @@ import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { createInsertSchema } from "drizzle-typebox"
 import { filesTable, usersFilesTable } from '../../drizzle/schema'
-import { db } from '../../drizzle/index'
+import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import * as jose from 'jose'
 
 
-const createFileSchema = createInsertSchema(files)
+const createFileSchema = createInsertSchema(filesTable)
 export const createFile = (app: Elysia) =>
     app
     .use(userInfo)
     .post('/create', async ({body, userInfo}) => {
-    const newFile: typeof files.$inferInsert = {
+    const newFile: typeof filesTable.$inferInsert = {
         name: body.name,
         description: body.description,
         createdBy: userInfo.userName

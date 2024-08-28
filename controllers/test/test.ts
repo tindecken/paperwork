@@ -1,4 +1,4 @@
-import {Elysia, t} from "elysia"
+import {Elysia } from "elysia"
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface"
 
 
