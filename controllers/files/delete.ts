@@ -39,6 +39,6 @@ export const deleteFile = (app: Elysia) =>
         return res
     }, {
         params: t.Object({
-            id: t.Numeric()
+            id: t.String()
         })
     })
