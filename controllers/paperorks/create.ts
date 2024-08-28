@@ -1,19 +1,19 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { createInsertSchema } from "drizzle-typebox"
-import {documentsTable, paperWorksTable, categoriesTable} from '../../drizzle/schema.ts'
-import { db } from '../../drizzle/index'
+import {documentsTable, paperworksTable, categoriesTable} from '../../drizzle/schema.ts'
+import { db } from '../../drizzle'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
 
-const createPaperWorkSchema = createInsertSchema(paperWorks)
+const createPaperWorkSchema = createInsertSchema(paperworksTable)
 export const createPaperWork = (app: Elysia) =>
   app
     .use(userInfo)
     .post('/create/:categoryId', async ({body, params: { categoryId }, userInfo, set}) => {
-      const category = await db.query.categories.findFirst({
-        where: eq(categories.id, categoryId)
+      const category = await db.query.categoriesTable.findFirst({
+        where: eq(categoriesTable.id, categoryId)
       })
       if (!category) {
         throw new Error(`Category ${categoryId} not found!`)
@@ -34,7 +34,7 @@ export const createPaperWork = (app: Elysia) =>
         }
       }
       await db.transaction(async (tx) => {
-        const ppw: typeof paperWorks.$inferInsert = {
+        const ppw: typeof paperworksTable.$inferInsert = {
           categoryId: categoryId,
           name: body.name,
           description: body.description,
@@ -42,14 +42,14 @@ export const createPaperWork = (app: Elysia) =>
           price: body.price,
           createdBy: userInfo.userName
         }
-        const insertedPaperWork = await tx.insert(paperWorks).values(ppw).returning()
+        const insertedPaperWork = await tx.insert(paperworksTable).values(ppw).returning()
         // upload files
         if (body.files) {
           for (const file of body.files) {
             const fileArrayBuffer = await file.arrayBuffer();
             if (fileArrayBuffer.byteLength === 0) throw new Error(`File ${file.name} is empty!`)
             const blobData = new Uint8Array(fileArrayBuffer);
-            const newDocument: typeof documents.$inferInsert = {
+            const newDocument: typeof documentsTable.$inferInsert = {
               paperWorkId: insertedPaperWork[0].id,
               fileSize: file.size,
               fileName: file.name,
@@ -57,7 +57,7 @@ export const createPaperWork = (app: Elysia) =>
               createdBy: userInfo.userName
             }
             await tx
-              .insert(documents)
+              .insert(documentsTable)
               .values(newDocument)
               .returning()
           }

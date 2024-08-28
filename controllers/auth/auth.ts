@@ -1,6 +1,6 @@
 import {Elysia, t} from "elysia"
-import { db } from '../../drizzle/index'
-import { usersTa, usersTable } from '../../drizzle/schema'
+import { db } from '../../drizzle'
+import { usersTable } from '../../drizzle/schema'
 import {comparePassword, hashPassword} from '../../libs/bcrypt'
 import * as jose from 'jose'
 import {eq} from 'drizzle-orm'
@@ -9,7 +9,7 @@ import type {TokenInterface} from "../../models/TokenInterface"
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface"
 import {bearer} from "@elysiajs/bearer"
 
-const createUser = createInsertSchema(users)
+const createUser = createInsertSchema(usersTable)
 
 export const auth = (app: Elysia) => app
     .use(bearer())

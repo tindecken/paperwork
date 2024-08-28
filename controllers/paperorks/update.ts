@@ -1,9 +1,9 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { paperworksTable } from '../../drizzle/schema.ts'
-import { db } from '../../drizzle/index'
+import { db } from '../../drizzle'
 import {isAdmin} from "../../libs/isAdmin.ts";
-import {eq, sql} from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 
 

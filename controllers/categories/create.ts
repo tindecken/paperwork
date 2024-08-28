@@ -1,20 +1,20 @@
 import { Elysia, t } from 'elysia';
-import { categories, usersFiles } from '../../drizzle/schema'
+import { categoriesTable, usersFilesTable } from '../../drizzle/schema'
 import { createInsertSchema } from "drizzle-typebox"
-import db from '../../drizzle/db'
+import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import {eq} from "drizzle-orm"
 
-const createCategorySchema = createInsertSchema(categories)
+const createCategorySchema = createInsertSchema(categoriesTable)
 export const createCategory = (app: Elysia) =>
   app.post('/create', async ({ body }) => {
-    const newCategory: typeof categories.$inferInsert = {
+    const newCategory: typeof categoriesTable.$inferInsert = {
       name: body.name,
       description: body.description,
       fileId: body.fileId
   }
-  const userFile = await db.query.usersFiles.findFirst({
-    where: eq(usersFiles.fileId, body.fileId)
+  const userFile = await db.query.usersFilesTable.findFirst({
+    where: eq(usersFilesTable.fileId, body.fileId)
   })
   if(!userFile) {
     throw new Error("Forbidden")
@@ -23,7 +23,7 @@ export const createCategory = (app: Elysia) =>
     throw new Error("Forbidden")
   }
     const createdCategory = await db
-      .insert(categories)
+      .insert(categoriesTable)
       .values(newCategory)
       .returning()
     

@@ -6,8 +6,8 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { isAdmin } from '../../libs/isAdmin'
-import { files, usersFiles } from '../../drizzle/schema'
-import { db } from '../../drizzle/index'
+import { filesTable, usersFilesTable } from '../../drizzle/schema'
+import { db } from '../../drizzle'
 import { eq } from 'drizzle-orm'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 
@@ -19,18 +19,18 @@ export const deleteFile = (app: Elysia) =>
         if(!isAdminRights) {
             throw new Error("Forbidden")
         }
-        const file = await db.query.files.findFirst({
-            where: eq(files.id, id)
+        const file = await db.query.filesTable.findFirst({
+            where: eq(filesTable.id, id)
         })
         if (!file) {
             throw new Error("File not found")
         }
         // delete record in usersFiles
-        await db.delete(usersFiles).where(eq(usersFiles.fileId, id)        )
+        await db.delete(usersFilesTable).where(eq(usersFilesTable.fileId, id))
         // inactive file
-        await db.update(files)
-          .set({ isActive: false })
-          .where(eq(files.id, id))
+        await db.update(filesTable)
+          .set({ isDeleted: 1 })
+          .where(eq(filesTable.id, id))
         const res: GenericResponseInterface = {
           success: true,
           message: `Delete file: ${file.name} successfully!`,
