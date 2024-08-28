@@ -6,7 +6,8 @@ export const usersTable = sqliteTable('users', {
   name: text('name').notNull(),
   userName: text('userName').unique().notNull(),
   email: text('email').unique().notNull(),
-  password: text('password').notNull(),
+  hash: text('hash').notNull(),
+  salt: text('salt').notNull(),
   systemRole: text('systemRole').notNull().default('user'),
   type: text('type').notNull().default('free'),
   isDeleted: integer('isDeleted').notNull().default(0),
@@ -14,12 +15,8 @@ export const usersTable = sqliteTable('users', {
 
 export const usersFilesTable = sqliteTable('userFiles', {
   id: text('id').primaryKey(),
-  userId: text('userId')
-    .notNull()
-    .references(() => usersTable.id, { onDelete: 'cascade' }),
-  fileId: text('fileId')
-    .notNull()
-    .references(() => filesTable.id, { onDelete: 'cascade' }),
+  userId: text('userId').notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+  fileId: text('fileId').notNull().references(() => filesTable.id, { onDelete: 'cascade' }),
   role: text('role').notNull(),
   isSelected: integer('isSelected').notNull().default(0),
   createdAt: text('createdAt')

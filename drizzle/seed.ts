@@ -11,13 +11,13 @@ await db.delete(documentsTable);
 await db.delete(categoriesTable);
 await db.delete(filesTable);
 
-const hashedPassword = await Bun.password.hash('rivaldo');
 const user: InsertUser = {
   id: ulid(),
   name: 'Tindecken',
   userName: 'tindecken',
   email: 'tindecken@gmail.com',
-  password: hashedPassword,
+  hash: '13350f29e586ee4d86b1c9f4e3c8900ea704c15b202bbadba1a98e916072c7c150087f3ba1e1e47ae001c58fe481a1aa1c01deeb1dd2462ad2d8bd88dc16a10d',
+  salt: 'ab921a2176a793495cd8a0868aab262f',
   systemRole: 'admin',
   isDeleted: 0,
 };
@@ -67,7 +67,8 @@ const user2: InsertUser = {
   name: 'Hoang Nguyen',
   userName: 'hoangnguyen',
   email: 'hoangnguyen@gmail.com',
-  password: hashedPassword,
+  hash: '13350f29e586ee4d86b1c9f4e3c8900ea704c15b202bbadba1a98e916072c7c150087f3ba1e1e47ae001c58fe481a1aa1c01deeb1dd2462ad2d8bd88dc16a10d',
+  salt: 'ab921a2176a793495cd8a0868aab262f',
   systemRole: 'user ',
   isDeleted: 0,
 };

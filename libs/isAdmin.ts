@@ -3,17 +3,15 @@ import { db } from '../drizzle'
 import {usersFilesTable} from "../drizzle/schema.ts";
 
 // Getting admin rights
-export const isAdmin = async (userId: number, fileId: number) => {
+export const isAdmin = async (userId: string, fileId: string) => {
   const record = await db.query.usersTable.findFirst({
       where: and(
-        eq(usersFilesTable.userId, userId),
-        eq(usersFilesTable.fileId, fileId),
-        eq(usersFilesTable.role, 'admin')
-      ),
+          eq(usersFilesTable.userId, userId),
+          eq(usersFilesTable.fileId, fileId),
+          eq(usersFilesTable.role, 'admin')
+      )
     })
-  if (record) {
-    return true
-  }
+  if (record) return true
   return false
 }
 

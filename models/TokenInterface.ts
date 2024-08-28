@@ -1,11 +1,10 @@
 export interface TokenInterface {
-    userId: number
+    userId: string
     name: string
     userName: string
     email: string
-    role?: string
-    fileId?: number
-    iat: number
-    exp: number
+    systemRole: string
+    selectedFileId: string | null
+    role: string | null
     maxEpx: number
 }
