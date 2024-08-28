@@ -2,7 +2,7 @@ import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { createInsertSchema } from "drizzle-typebox"
 import { files, usersFiles, paperWorks, categories } from '../../drizzle/schema'
-import db from '../../drizzle/db'
+import { db } from '../../drizzle/index'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import {eq, getTableColumns, asc, desc} from "drizzle-orm";
 

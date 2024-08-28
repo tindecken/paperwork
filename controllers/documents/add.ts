@@ -1,8 +1,8 @@
 // Add documents to paper work
 import { Elysia, t } from "elysia";
 import { userInfo } from "../../middlewares/userInfo";
-import { documents, paperWorks } from "../../drizzle/schema";
-import db from "../../drizzle/db";
+import { documentsTable, paperworksTable } from "../../drizzle/schema";
+import { db } from "../../drizzle/index";
 import {eq} from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 import { isAdmin } from "../../libs/isAdmin";
@@ -20,8 +20,8 @@ export const addDocuments = (app: Elysia) =>
       }
       const paperWork = await db
         .select()
-        .from(paperWorks)
-        .where(eq(paperWorks.id, body.paperWorkId))
+        .from(paperworksTable)
+        .where(eq(paperworksTable.id, body.paperWorkId))
         .limit(1)
         .execute()
       if (paperWork.length === 0) {
@@ -39,14 +39,14 @@ export const addDocuments = (app: Elysia) =>
         if (fileArrayBuffer.byteLength === 0)
           throw new Error(`File ${file.name} is empty!`);
         const blobData = new Uint8Array(fileArrayBuffer);
-        const newDocument: typeof documents.$inferInsert = {
+        const newDocument: typeof documentsTable.$inferInsert = {
           paperWorkId: body.paperWorkId,
           fileSize: file.size,
           fileName: file.name,
           fileBlob: blobData,
           createdBy: userInfo.userName,
         };
-        await db.insert(documents).values(newDocument);
+        await db.insert(documentsTable).values(newDocument);
       }
       const res: GenericResponseInterface = {
         success: true,

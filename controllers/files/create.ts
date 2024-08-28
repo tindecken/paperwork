@@ -8,8 +8,8 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { createInsertSchema } from "drizzle-typebox"
-import { files, usersFiles } from '../../drizzle/schema'
-import db from '../../drizzle/db'
+import { filesTable, usersFilesTable } from '../../drizzle/schema'
+import { db } from '../../drizzle/index'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import * as jose from 'jose'
 
@@ -25,15 +25,15 @@ export const createFile = (app: Elysia) =>
         createdBy: userInfo.userName
     }
     const file = await db
-        .insert(files)
+        .insert(filesTable)
         .values(newFile)
         .returning()
-    const newUserFile: typeof usersFiles.$inferInsert = {
+    const newUserFile: typeof usersFilesTable.$inferInsert = {
         userId: userInfo.userId,
         fileId: file[0].id,
         role: 'admin',
     }
-    await db.insert(usersFiles).values(newUserFile)
+    await db.insert(usersFilesTable).values(newUserFile)
     const alg = 'HS256'
     const token = await new jose.SignJWT({ 
         userId: userInfo.userId,

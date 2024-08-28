@@ -1,6 +1,6 @@
 import {Elysia, t} from "elysia"
-import db from '../../drizzle/db'
-import {users} from '../../drizzle/schema'
+import { db } from '../../drizzle/index'
+import { usersTa, usersTable } from '../../drizzle/schema'
 import {comparePassword, hashPassword} from '../../libs/bcrypt'
 import * as jose from 'jose'
 import {eq} from 'drizzle-orm'
@@ -18,8 +18,8 @@ export const auth = (app: Elysia) => app
         .post('/login', async ({ body, set }) => {
             const user = await db
                 .select()
-                .from(users)
-                .where(eq(users.userName, body.userName))
+                .from(usersTable)
+                .where(eq(usersTable.userName, body.userName))
             if (user.length === 0) {
                 set.status = 401
                 throw new Error('User not found')
@@ -67,7 +67,7 @@ export const auth = (app: Elysia) => app
                 salt
             }
             await db
-                .insert(users)
+                .insert(usersTable)
                 .values(registerUser)
             const res: GenericResponseInterface = {
                 success: true,

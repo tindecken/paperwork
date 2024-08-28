@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { createInsertSchema } from "drizzle-typebox"
-import {documents, paperWorks, categories} from '../../drizzle/schema.ts'
-import db from '../../drizzle/db'
+import {documentsTable, paperWorksTable, categoriesTable} from '../../drizzle/schema.ts'
+import { db } from '../../drizzle/index'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";

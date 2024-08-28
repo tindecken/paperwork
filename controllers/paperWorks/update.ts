@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
-import { paperWorks} from '../../drizzle/schema.ts'
-import db from '../../drizzle/db'
+import { paperworksTable } from '../../drizzle/schema.ts'
+import { db } from '../../drizzle/index'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq, sql} from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
@@ -13,8 +13,8 @@ export const updatePaperWork = (app: Elysia) =>
     .put('/update/:paperworkId', async ({body, params: { paperworkId }, userInfo}) => {
       const paperWork = await db
         .select()
-        .from(paperWorks)
-        .where(eq(paperWorks.id, paperworkId))
+        .from(paperworksTable)
+        .where(eq(paperworksTable.id, paperworkId))
         .limit(1)
         .execute()
       console.log('paperwork', paperWork)
@@ -26,7 +26,7 @@ export const updatePaperWork = (app: Elysia) =>
         throw new Error("Forbidden")
       }
       const updatedPaperWork = await db
-        .update(paperWorks)
+        .update(paperworksTable)
         .set({
           name: body.name,
           description: body.description,
@@ -35,7 +35,7 @@ export const updatePaperWork = (app: Elysia) =>
           updatedAt: sql`CURRENT_TIMESTAMP`,
           updatedBy: userInfo.userName
         })
-        .where(eq(paperWorks.id, paperworkId))
+        .where(eq(paperworksTable.id, paperworkId))
         .returning()
       const res: GenericResponseInterface = {
         success: true,

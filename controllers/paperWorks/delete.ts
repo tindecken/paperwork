@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo.ts'
-import { documents, paperWorks } from '../../drizzle/schema.ts'
-import db from '../../drizzle/db.ts'
+import { documentsTable, paperWorksTable } from '../../drizzle/schema.ts'
+import { db } from '../../drizzle/index'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
@@ -13,8 +13,8 @@ export const deletePaperWork = (app: Elysia) =>
     .delete('/delete/:paperworkId', async ({params: { paperworkId }, userInfo}) => {
       const paperWork = await db
         .select()
-        .from(paperWorks)
-        .where(eq(paperWorks.id, paperworkId))
+        .from(paperWorksTable)
+        .where(eq(paperWorksTable.id, paperworkId))
         .limit(1)
         .execute()
       if (paperWork.length === 0) {
@@ -26,12 +26,12 @@ export const deletePaperWork = (app: Elysia) =>
       }
       // delete paperwork
       await db
-        .delete(paperWorks)
-        .where(eq(paperWorks.id, paperworkId))
+        .delete(paperWorksTable)
+        .where(eq(paperWorksTable.id, paperworkId))
       // delete document
       await db
-        .delete(documents)
-        .where(eq(documents.paperWorkId, paperworkId))
+        .delete(documentsTable)
+        .where(eq(documentsTable.paperWorkId, paperworkId))
       const res: GenericResponseInterface = {
         success: true,
         message: `Delete paper work ${paperWork[0].name} successfully!`,
