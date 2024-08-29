@@ -1,16 +1,18 @@
 // Add documents to paper work
 import { Elysia, t } from "elysia";
 import { userInfo } from "../../middlewares/userInfo";
-import { documentsTable, paperworksTable } from "../../drizzle/schema";
+import { documentsTable, paperworksTable, type InsertDocument } from "../../drizzle/schema";
 import { db } from "../../drizzle/index";
 import {eq} from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 import { isAdmin } from "../../libs/isAdmin";
+import { ulid } from "ulid";
 export const addDocuments = (app: Elysia) =>
-  app.use(userInfo).post(
-    "/add",
+  app.use(userInfo)
+  .post(
+    "/addmultiple",
     async ({ body, userInfo, set }) => {
-      const isAdminRights = await isAdmin(userInfo.userId, userInfo.fileId!);
+      const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);
       if (!isAdminRights) {
         throw new Error("Forbidden");
       }
@@ -40,7 +42,8 @@ export const addDocuments = (app: Elysia) =>
           throw new Error(`File ${file.name} is empty!`);
         const blobData = new Uint8Array(fileArrayBuffer);
         const newDocument: typeof documentsTable.$inferInsert = {
-          paperWorkId: body.paperWorkId,
+          id: ulid(),
+          paperworkId: body.paperWorkId,
           fileSize: file.size,
           fileName: file.name,
           fileBlob: blobData,
@@ -58,7 +61,52 @@ export const addDocuments = (app: Elysia) =>
     {
       body: t.Object({
         files: t.Files(),
-        paperWorkId: t.Numeric(),
+        paperWorkId: t.String(),
       }),
     }
-  );
+  )
+  .post("/upload", async ({ body, userInfo }) => {
+    console.log('userInfo', userInfo)
+    console.log('body', body)
+    const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);
+    if (!isAdminRights) {
+      throw new Error("Forbidden");
+    }
+    console.log('userInfo', userInfo)
+    const paperwork = await db.select().from(paperworksTable).where(eq(paperworksTable.id, body.paperworkId))
+    console.log('paperwork', paperwork[0])
+    if (paperwork.length === 0) {
+      throw new Error(`Paper work ${body.paperworkId} not found`)
+    }
+    if (body.file.size > 1024 * 1024 * 10) {
+      throw new Error(
+        `File ${body.file.name} with file size ${body.file.size} is greater than 10MB! Please upload a smaller file.`
+      );
+    }
+    const fileArrayBuffer = await body.file.arrayBuffer();
+      if (fileArrayBuffer.byteLength === 0)
+        throw new Error(`File ${body.file.name} is empty!`);
+      const blobData = new Uint8Array(fileArrayBuffer);
+      const newDocument: InsertDocument = {
+        id: ulid(),
+        paperworkId: body.paperworkId,
+        fileSize: body.file.size,
+        fileName: body.file.name,
+        fileBlob: blobData,
+        createdBy: userInfo.userName,
+      };
+      console.log('newDocument', newDocument)
+      await db.insert(documentsTable).values(newDocument);
+    const res: GenericResponseInterface = {
+      success: true,
+      message: `Added ${body.file.name} document to paper work ${paperwork[0].name} successfully!`,
+      data: null,
+    };
+    return res;
+  }, {
+    body: t.Object({
+      file: t.File(),
+      paperworkId: t.String(),
+    }),
+  })
+  .get("/test", () => 'test');

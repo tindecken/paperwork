@@ -6,8 +6,7 @@ export const usersTable = sqliteTable('users', {
   name: text('name').notNull(),
   userName: text('userName').unique().notNull(),
   email: text('email').unique().notNull(),
-  hash: text('hash').notNull(),
-  salt: text('salt').notNull(),
+  password: text('password').notNull(),
   systemRole: text('systemRole').notNull().default('user'),
   type: text('type').notNull().default('free'),
   isDeleted: integer('isDeleted').notNull().default(0),
@@ -117,11 +116,14 @@ export const documentsTable = sqliteTable('documents', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   createdBy: text('createdBy'),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+  updatedBy: text('updatedBy'),
+  isCover: integer('isCover').notNull().default(0),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
 
 export const logsTable = sqliteTable('logs', {
-  id: integer('id').primaryKey(),
+  id: text('id').primaryKey(),
   actionType: text('actionType'),
   method: text('method'),
   message: text('message'),
@@ -155,3 +157,12 @@ export type SelectFile = typeof filesTable.$inferSelect;
 
 export type InsertUsersFiles = typeof usersFilesTable.$inferInsert;
 export type SelectUsersFiles = typeof usersFilesTable.$inferSelect;
+
+export type InsertCategory = typeof categoriesTable.$inferInsert;
+
+export type InsertPaperwork = typeof paperworksTable.$inferInsert;
+
+export type InsertPaperworksCategories = typeof paperworksCategoriesTable.$inferInsert;
+export type InsertDocument = typeof documentsTable.$inferInsert;
+
+export type InsertLog = typeof logsTable.$inferInsert;
