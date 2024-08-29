@@ -1,0 +1,18 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3001/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userName": "tindecken",
+    "password": "rivaldo"
+  }
+}

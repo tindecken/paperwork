@@ -22,8 +22,9 @@ export const usersFilesTable = sqliteTable('userFiles', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   createdBy: text('createdBy'),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
+  isDeleted: integer('isDeleted').notNull().default(0),
 });
 
 export const usersSettingsTable = sqliteTable('usersSettings', {
@@ -38,7 +39,7 @@ export const usersSettingsTable = sqliteTable('usersSettings', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   createdBy: text('createdBy'),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
 });
 
@@ -50,7 +51,7 @@ export const filesTable = sqliteTable('files', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   createdBy: text('createdBy'),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
@@ -66,7 +67,7 @@ export const categoriesTable = sqliteTable('categories', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   createdBy: text('createdBy'),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
@@ -82,7 +83,7 @@ export const paperworksTable = sqliteTable('paperworks', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   createdBy: text('createdBy'),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
@@ -99,7 +100,7 @@ export const paperworksCategoriesTable = sqliteTable('paperworksCategories', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   createdBy: text('createdBy'),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
@@ -116,7 +117,7 @@ export const documentsTable = sqliteTable('documents', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   createdBy: text('createdBy'),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
   isCover: integer('isCover').notNull().default(0),
   isDeleted: integer('isDeleted').notNull().default(0),
@@ -144,7 +145,7 @@ export const settingsTable = sqliteTable('settings', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   createdBy: text('createdBy'),
-  updatedAt: integer('updatedAt', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
