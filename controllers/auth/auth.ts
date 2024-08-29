@@ -25,7 +25,7 @@ export const auth = (app: Elysia) => app
                 set.status = 401
                 throw new Error('User not found')
             }
-            const isPasswordValid = await comparePassword(body.password, user[0].salt, user[0].hash)
+            const isPasswordValid = await Bun.password.verify(body.password, user[0].password)
             if (!isPasswordValid) {
                 set.status = 402
                 throw new Error('Invalid credentials')
@@ -37,7 +37,8 @@ export const auth = (app: Elysia) => app
                     eq(usersFilesTable.isSelected, 1)
                 )
             )
-            const tokenObject: TokenInterface = {
+            const alg = process.env["JWT_ALGORITHM"] || 'HS256'
+            const token = await new jose.SignJWT({
                 userId: user[0].id,
                 name: user[0].name,
                 userName: user[0].userName,
@@ -46,9 +47,7 @@ export const auth = (app: Elysia) => app
                 selectedFileId: usersFiles.length > 0 ? usersFiles[0].fileId : null,
                 role: usersFiles.length > 0 ? usersFiles[0].role : null,
                 maxEpx: Date.now() + 60 * 60 * 20000
-            }
-            const alg = process.env["JWT_ALGORITHM"] || 'HS256'
-            const token = await new jose.SignJWT({tokenObject})
+            })
                 .setProtectedHeader({alg})
                 .setIssuedAt()
                 .setExpirationTime('2h')
@@ -66,14 +65,13 @@ export const auth = (app: Elysia) => app
             })
         })
         .post('/register', async ({body}) => {
-            const { hash, salt } = await hashPassword(body.password)
+            const hashedPassword = await Bun.password.hash(body.password)
             const registerUser = {
                 ...body,
-                hash,
-                salt
+                password: hashPassword
             }
             await db
-                .insert(usersTable)
+                .insert(usersTable) 
                 .values(registerUser)
             const res: GenericResponseInterface = {
                 success: true,
@@ -82,7 +80,7 @@ export const auth = (app: Elysia) => app
             }
             return res
         }, {
-            body: t.Omit(t.Composite([createUser, t.Object({password: t.String({minLength: 3, maxLength: 100})})]), ['id','hash', 'salt']),
+            body: t.Omit(t.Composite([createUser, t.Object({password: t.String({minLength: 3, maxLength: 100})})]), ['id','password']),
         })
         .post('/refreshtoken', async ({bearer, set}) => {
             if (!bearer) {
@@ -103,7 +101,7 @@ export const auth = (app: Elysia) => app
                         email: payload.email,
                         maxEpx: payload.maxEpx,
                         role: payload.role,
-                        fileId: payload.fileId
+                        selectedFileId: payload.selectedFileId
                     })
                     .setProtectedHeader({ alg: 'HS256' })
                     .setIssuedAt()

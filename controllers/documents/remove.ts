@@ -10,7 +10,7 @@ export const removeDocuments = (app: Elysia) =>
   app.use(userInfo).delete(
     "/remove",
     async ({ body, userInfo }) => {
-      const isAdminRights = await isAdmin(userInfo.userId, userInfo.fileId!);
+      const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);
       if (!isAdminRights) {
         throw new Error("Forbidden");
       }
