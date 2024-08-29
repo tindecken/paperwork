@@ -16,7 +16,6 @@ export const auth = (app: Elysia) => app
     .group('/auth', (app) =>
         app
         .post('/login', async ({ body, set }) => {
-
             const user = await db
                 .select()
                 .from(usersTable)

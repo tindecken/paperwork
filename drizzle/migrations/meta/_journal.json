@@ -36,6 +36,20 @@
       "when": 1724903919387,
       "tag": "0004_outstanding_snowbird",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1724939494548,
+      "tag": "0005_fine_thunderball",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1724944291263,
+      "tag": "0006_organic_yellow_claw",
+      "breakpoints": true
     }
   ]
 }
