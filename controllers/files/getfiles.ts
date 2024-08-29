@@ -3,7 +3,7 @@ import { userInfo } from '../../middlewares/userInfo'
 import { filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
-import { eq, and, sql, inArray } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 
 export const getFiles = (app: Elysia) =>
