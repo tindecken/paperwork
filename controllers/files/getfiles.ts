@@ -1,4 +1,4 @@
-import { Elysia, t } from 'elysia'
+import { Elysia } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
