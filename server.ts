@@ -7,6 +7,7 @@ import { cookie } from "@elysiajs/cookie";
 import type { GenericResponseInterface } from './models/GenericResponseInterface'
 import { documentsController } from "./controllers/documents";
 import { paperworksController } from "./controllers/paperworks";
+import {categoriesController} from "./controllers/categories";
 
 const app = new Elysia()
     .group('/api', (app) =>
@@ -20,6 +21,7 @@ const app = new Elysia()
         .use(documentsController)
         .use(filesController)
         .use(paperworksController)
+        .use(categoriesController)
         .onError(({ code, error }: { code: any, error: any }) => {
             switch(code) {
                 case 'VALIDATION':

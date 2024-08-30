@@ -50,6 +50,13 @@
       "when": 1724944291263,
       "tag": "0006_organic_yellow_claw",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1724990151403,
+      "tag": "0007_lush_micromax",
+      "breakpoints": true
     }
   ]
 }
