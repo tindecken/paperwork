@@ -1,25 +1,38 @@
 import { Elysia, t } from 'elysia';
-import { categoriesTable } from '../../drizzle/schema'
+import {categoriesTable, paperworksCategoriesTable, paperworksTable} from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
-import { eq, and } from "drizzle-orm"
+import {eq, and } from "drizzle-orm"
+import {userInfo} from "../../middlewares/userInfo.ts";
 
 export const getCategoriesByFileId = (app: Elysia) =>
-  app.get('/getCategories', async ({ body }) => {
-    const categories = await db.select().from(categoriesTable).where(
-        and(
-          eq(categoriesTable.fileId, body.fileId),
-          eq(categoriesTable.isDeleted, 0)
+  app
+      .use(userInfo)
+      .get('/getCategories', async ({ userInfo }) => {
+        const categories = await db.select().from(categoriesTable).where(
+            and(
+              eq(categoriesTable.fileId, userInfo.selectedFileId!),
+              eq(categoriesTable.isDeleted, 0)
+            )
         )
-    )
-    const res: GenericResponseInterface = {
-      success: true,
-      message: `Get ${categories.length} categories successfully!`,
-      data: categories
-    }
-    return res
-  }, {
-    body: t.Object({
-      fileId: t.String()
-    }
-  });
+        const data = await Promise.all(
+            categories.map(async (cat) => {
+                const paperworkCount = await db.select({id: paperworksCategoriesTable.id}).from(paperworksCategoriesTable).where(
+                    and(
+                        eq(paperworksCategoriesTable.categoryId, cat.id),
+                        eq(paperworksCategoriesTable.isDeleted, 0)
+                    )
+                )
+                return {
+                    ...cat,
+                    paperworkCount: paperworkCount.length
+                }
+            })
+        )
+        const res: GenericResponseInterface = {
+          success: true,
+          message: `Get ${categories.length} categories successfully!`,
+          data: data
+        }
+        return res
+      });
