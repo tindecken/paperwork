@@ -1,5 +1,7 @@
 export interface GenericResponseInterface {
     success: boolean,
     message: string,
-    data: Object | null
+    data: Object | null,
+    pageNumber?: number,
+    pageSize?: number,
 }
