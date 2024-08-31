@@ -167,3 +167,6 @@ export type InsertPaperworksCategories = typeof paperworksCategoriesTable.$infer
 export type InsertDocument = typeof documentsTable.$inferInsert;
 
 export type InsertLog = typeof logsTable.$inferInsert;
+
+export type SelectPaperwork = typeof paperworksTable.$inferSelect;
+export type SelectPaperworkWithCategoryName = SelectPaperwork & { categoryName: string, categoryId: string };
