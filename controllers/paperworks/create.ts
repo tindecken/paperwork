@@ -1,24 +1,25 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { createInsertSchema } from "drizzle-typebox"
-import {documentsTable, paperworksTable, categoriesTable} from '../../drizzle/schema.ts'
+import {documentsTable, paperworksTable, categoriesTable, type InsertPaperwork, paperworksCategoriesTable} from '../../drizzle/schema.ts'
 import { db } from '../../drizzle'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
+import { ulid } from 'ulid'
 
-const createPaperWorkSchema = createInsertSchema(paperworksTable)
+const createPaperorkSchema = createInsertSchema(paperworksTable)
 export const createPaperWork = (app: Elysia) =>
   app
     .use(userInfo)
-    .post('/create/:categoryId', async ({body, params: { categoryId }, userInfo, set}) => {
+    .post('/create', async ({body, userInfo, set}) => {
       const category = await db.query.categoriesTable.findFirst({
-        where: eq(categoriesTable.id, categoryId)
+        where: eq(categoriesTable.id, body.categoryId),
       })
       if (!category) {
-        throw new Error(`Category ${categoryId} not found!`)
+        throw new Error(`Category ${body.categoryId} not found!`)
       }
-      const isAdminRights = await isAdmin(userInfo.userId, userInfo.fileId!)
+      const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!)
       if(!isAdminRights) {
         throw new Error("Forbidden")
       }
@@ -34,23 +35,34 @@ export const createPaperWork = (app: Elysia) =>
         }
       }
       await db.transaction(async (tx) => {
-        const ppw: typeof paperworksTable.$inferInsert = {
-          categoryId: categoryId,
+        const ppw: InsertPaperwork = {
+          id: ulid(),
           name: body.name,
           description: body.description,
-          date: body.date,
+          issuedAt: body.date,
           price: body.price,
+          priceCurrency: body.priceCurrency,
           createdBy: userInfo.userName
         }
         const insertedPaperWork = await tx.insert(paperworksTable).values(ppw).returning()
-        // upload files
+        // create paperwork-category relationship
+        const pwc: typeof paperworksCategoriesTable.$inferInsert = {
+          id: ulid(),
+          paperworkId: insertedPaperWork[0].id,
+          categoryId: body.categoryId,
+          createdBy: userInfo.userName
+        }
+        await tx.insert(paperworksCategoriesTable).values(pwc).returning()
+        // create documents for uploaded files
         if (body.files) {
           for (const file of body.files) {
+            console.log(`Uploading file: ${file.name}`)
             const fileArrayBuffer = await file.arrayBuffer();
             if (fileArrayBuffer.byteLength === 0) throw new Error(`File ${file.name} is empty!`)
             const blobData = new Uint8Array(fileArrayBuffer);
-            const newDocument: typeof documentsTable.$inferInsert = {
-              paperWorkId: insertedPaperWork[0].id,
+            const document: typeof documentsTable.$inferInsert = {
+              id: ulid(),
+              paperworkId: insertedPaperWork[0].id,
               fileSize: file.size,
               fileName: file.name,
               fileBlob: blobData,
@@ -58,8 +70,8 @@ export const createPaperWork = (app: Elysia) =>
             }
             await tx
               .insert(documentsTable)
-              .values(newDocument)
-              .returning()
+              .values(document)
+              .returning()            
           }
         }
       })
@@ -70,8 +82,13 @@ export const createPaperWork = (app: Elysia) =>
       }
       return res
     }, {
-      body: t.Omit(t.Composite([createPaperWorkSchema, t.Object({files: t.Optional(t.Files())})]), ['id', 'categoryId', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy']),
-      params: t.Object({
-        categoryId: t.Numeric()
+      body: t.Object({
+        files: t.Optional(t.Files()),
+        categoryId: t.String(),
+        name: t.String(),
+        description: t.Optional(t.String()),
+        date: t.Optional(t.String()),
+        price: t.Optional(t.Number()),
+        priceCurrency: t.Optional(t.String()),
       })
     })

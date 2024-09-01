@@ -78,7 +78,7 @@ export const paperworksTable = sqliteTable('paperworks', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
-  issuedAt: integer('issuedAt', { mode: 'timestamp' }),
+  issuedAt: text('issuedAt'),
   price: real('price'),
   priceCurrency: text('priceCurrency'),
   createdAt: text('createdAt')
