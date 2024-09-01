@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text, real, blob } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text, real, blob, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const usersTable = sqliteTable('users', {
   id: text('id').primaryKey(),
@@ -70,7 +70,9 @@ export const categoriesTable = sqliteTable('categories', {
   updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
-});
+}, (t) => ({
+  uniqueFileandName: uniqueIndex('fileId_name').on(t.fileId, t.name)
+}));
 
 export const paperworksTable = sqliteTable('paperworks', {
   id: text('id').primaryKey(),
@@ -169,4 +171,4 @@ export type InsertDocument = typeof documentsTable.$inferInsert;
 export type InsertLog = typeof logsTable.$inferInsert;
 
 export type SelectPaperwork = typeof paperworksTable.$inferSelect;
-export type SelectPaperworkWithCategoryName = SelectPaperwork & { categoryName: string, categoryId: string };
+export type SelectPaperworkWithCategory = SelectPaperwork & { categoryName: string, categoryId: string, categoryDescription: string };

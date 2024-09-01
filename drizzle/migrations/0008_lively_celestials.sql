@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `fileId_name` ON `categories` (`fileId`,`name`);
