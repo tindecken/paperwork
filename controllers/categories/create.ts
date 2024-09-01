@@ -1,38 +1,69 @@
 import { Elysia, t } from 'elysia';
-import { categoriesTable, usersFilesTable } from '../../drizzle/schema'
-import { createInsertSchema } from "drizzle-typebox"
+import { categoriesTable, filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
-import {eq} from "drizzle-orm"
+import {eq, and} from "drizzle-orm"
+import { ulid } from 'ulid'
 
-const createCategorySchema = createInsertSchema(categoriesTable)
 export const createCategory = (app: Elysia) =>
-  app.post('/create', async ({ body }) => {
+  app.post('/create', async ({ body, set }) => {
+    var existedFile = await db.select().from(filesTable).where(
+      and(
+        eq(filesTable.id, body.fileId),
+        eq(filesTable.isDeleted, 0)
+      )
+    )
+    if(!existedFile) {
+      set.status = 404
+      const res: GenericResponseInterface = {
+        success: false,
+        message: `File not found!`,
+        data: null
+      }
+      return res
+    }
     const newCategory: typeof categoriesTable.$inferInsert = {
+      id: ulid(),
       name: body.name,
       description: body.description,
       fileId: body.fileId
-  }
-  const userFile = await db.query.usersFilesTable.findFirst({
-    where: eq(usersFilesTable.fileId, body.fileId)
-  })
-  if(!userFile) {
-    throw new Error("Forbidden")
-  }
-  if (userFile.role !== 'admin') {
-    throw new Error("Forbidden")
-  }
-    const createdCategory = await db
-      .insert(categoriesTable)
-      .values(newCategory)
-      .returning()
-    
-    const res: GenericResponseInterface = {
-      success: true,
-      message: `Create category ${createdCategory[0].name} successfully!`,
-      data: createdCategory
     }
-    return res
-  }, {
-    body: t.Omit(createCategorySchema, ['id', 'createdAt', 'updatedAt']),
+    const userFile = await db.query.usersFilesTable.findFirst({
+      where: eq(usersFilesTable.fileId, body.fileId)
+    })
+    if(!userFile) {
+      set.status = 404
+      const res: GenericResponseInterface = {
+        success: false,
+        message: `You are not allowed to create category!`,
+        data: null
+      }
+      return res
+    }
+    if (userFile.role !== 'admin') {
+      set.status = 403
+      const res: GenericResponseInterface = {
+        success: false,
+        message: `You are not allowed to create category!`,
+        data: null
+      }
+      return res
+    }
+      const createdCategory = await db
+        .insert(categoriesTable)
+        .values(newCategory)
+        .returning()
+      
+      const res: GenericResponseInterface = {
+        success: true,
+        message: `Create category ${createdCategory[0].name} successfully!`,
+        data: createdCategory
+      }
+      return res
+    }, {
+      body: t.Object({
+        fileId: t.String(),
+        name: t.String(),
+        description: t.Optional(t.String())
+      }),
 });

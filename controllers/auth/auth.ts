@@ -49,7 +49,7 @@ export const auth = (app: Elysia) => app
             })
                 .setProtectedHeader({alg})
                 .setIssuedAt()
-                .setExpirationTime('2h')
+                .setExpirationTime('24h')
                 .sign(new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
             const res: GenericResponseInterface = {
                 success: true, message: "Login success", data: {

@@ -12,50 +12,56 @@ import { filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import * as jose from 'jose'
+import { ulid } from 'ulid'
 
-
-const createFileSchema = createInsertSchema(filesTable)
 export const createFile = (app: Elysia) =>
     app
     .use(userInfo)
     .post('/create', async ({body, userInfo}) => {
         const newFile: typeof filesTable.$inferInsert = {
+            id: ulid(),
             name: body.name,
             description: body.description,
             createdBy: userInfo.userName
         }
-        const file = await db
+        const createdfile = await db
             .insert(filesTable)
             .values(newFile)
             .returning()
         const newUserFile: typeof usersFilesTable.$inferInsert = {
+            id: ulid(),
             userId: userInfo.userId,
-            fileId: file[0].id,
+            fileId: createdfile[0].id,
             role: 'admin',
+            isSelected: 1,
+            createdBy: userInfo.userName
         }
         await db.insert(usersFilesTable).values(newUserFile)
-        const alg = 'HS256'
-        const token = await new jose.SignJWT({ 
-            userId: userInfo.userId,
-            name: userInfo.name,
-            userName: userInfo.userName,
-            email: userInfo.email,
-            maxEpx: Date.now() + 60 * 60 * 20000,
-            fileId: file[0].id,
-            role: 'admin'
-        })
-        .setProtectedHeader({ alg })
-        .setIssuedAt()
-        .setExpirationTime('23h')
-        .sign(new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
+        const alg = process.env["JWT_ALGORITHM"] || 'HS256'
+            const token = await new jose.SignJWT({
+                userId: userInfo.userId,
+                name: userInfo.name,
+                userName: userInfo.userName,
+                email: userInfo.email,
+                systemRole: userInfo.systemRole,
+                selectedFileId: createdfile[0].id,
+                role: newUserFile.role,
+                maxEpx: Date.now() + 60 * 60 * 20000
+            })
+                .setProtectedHeader({alg})
+                .setIssuedAt()
+                .setExpirationTime('24h')
+                .sign(new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
+
         const res: GenericResponseInterface = {
             success: true,
-            message: `Create file ${file[0].name} successfully!`,
-            data: { token, file }
+            message: `Created file ${createdfile[0].name} successfully!`,
+            data: { token, file: createdfile[0] }
         }
         return res
     }, {
         body: t.Object({
-            fileId: t.String()
+            name: t.String(),
+            description: t.Optional(t.String())
         }),
     })

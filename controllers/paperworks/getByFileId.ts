@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import {categoriesTable, paperworksCategoriesTable, paperworksTable, type SelectPaperwork, type SelectPaperworkWithCategoryName} from '../../drizzle/schema'
+import {categoriesTable, paperworksCategoriesTable, paperworksTable, type SelectPaperworkWithCategory} from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import {eq, and } from "drizzle-orm"
@@ -8,15 +8,15 @@ import {userInfo} from "../../middlewares/userInfo.ts";
 export const getByFileid = (app: Elysia) =>
   app
       .use(userInfo)
-      .get('/getPaperworks', async ({ userInfo, params }) => {
-        console.log('params', params)
+      .get('/getPaperworks', async ({ userInfo, query }) => {
+        console.log('query', query)
         const categories = await db.select().from(categoriesTable).where(
             and(
               eq(categoriesTable.fileId, userInfo.selectedFileId!),
               eq(categoriesTable.isDeleted, 0)
             )
         )
-        const ppws: SelectPaperworkWithCategoryName[] = []
+        let ppws: SelectPaperworkWithCategory[] = []
         await Promise.all(
             categories.map(async (cat) => {
                 const paperworks = await db.select().from(paperworksTable).innerJoin(paperworksCategoriesTable, eq(paperworksTable.id, paperworksCategoriesTable.paperworkId)).where(
@@ -28,17 +28,53 @@ export const getByFileid = (app: Elysia) =>
                 paperworks.forEach((p) => ppws.push({
                    ...p.paperworks,
                    categoryName: cat.name,
+                   categoryDescription: cat.description ?? '',
                    categoryId: cat.id
                 }))
             })
         )
-        // Filtering and sorting based on query parameters
-        
-
+        // limit
+        if (query.pageNumber && query.pageSize) {
+          ppws = ppws.slice((query.pageNumber - 1) * query.pageSize, query.pageNumber * query.pageSize)
+        }
+        // sort
+        if (query.sortField && query.sortDirection) {
+          ppws.sort((a, b) => {
+            const sortField = query.sortField as keyof SelectPaperworkWithCategory;
+            if (query.sortDirection === 'asc') {
+              return a[sortField]! > b[sortField]! ? 1 : -1;
+            } else {
+              return a[sortField]! < b[sortField]! ? 1 : -1;
+            }
+          });
+        } else{
+          // sort by createdAt desc
+          ppws.sort((a, b) => {
+            return a.createdAt! > b.createdAt! ? -1 : 1;
+          });
+        }
+        if (query.filterValue) {
+          ppws = ppws.filter((p) => p.name.toLowerCase().includes(query.filterValue!.toLowerCase()) 
+          || (p.description && p.description.toLowerCase().includes(query.filterValue!.toLowerCase())) 
+          || (p.categoryName.toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.categoryDescription && p.categoryDescription.toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.price && p.price.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.priceCurrency && p.priceCurrency.toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.issuedAt && p.issuedAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase())))
+        }
         const res: GenericResponseInterface = {
           success: true,
           message: `Get ${ppws.length} paperworks successfully!`,
           data: ppws
         }
         return res
+      }, {
+        query: t.Object({
+          pageNumber: t.Optional(t.Number()),
+          pageSize: t.Optional(t.Number()),
+          sortField: t.Optional(t.String()),
+          sortDirection: t.Optional(t.TemplateLiteral('${asc|desc}')),
+          filterValue: t.Optional(t.String()),
+        })
       });
