@@ -8,13 +8,14 @@ import type { GenericResponseInterface } from './models/GenericResponseInterface
 import { documentsController } from "./controllers/documents";
 import { paperworksController } from "./controllers/paperworks";
 import {categoriesController} from "./controllers/categories";
+import type {InsertLog} from "./drizzle/schema.ts";
+import {ulid} from "ulid";
+import {log} from "./libs/logging.ts";
 
-const app = new Elysia()
+new Elysia()
+    .use(swagger())
     .group('/api', (app) =>
         app
-        .use(swagger({
-            provider: 'swagger-ui',
-        }))
         .use(cors())
         .use(cookie())
         .use(auth)
@@ -22,7 +23,13 @@ const app = new Elysia()
         .use(filesController)
         .use(paperworksController)
         .use(categoriesController)
-        .onError(({ code, error }: { code: any, error: any }) => {
+        .onError(async ({ code, error, request }: { code: any, error: any, request: Request }) => {
+            const logRecord: InsertLog = {
+                id: ulid(),
+                message: error.message || error.response,
+                request: JSON.stringify(request),
+            }
+            await log(logRecord)
             switch(code) {
                 case 'VALIDATION':
                     var errorValue = JSON.parse(error.message)
