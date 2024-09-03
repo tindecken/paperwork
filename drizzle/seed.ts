@@ -1,8 +1,27 @@
 import { db } from './index';
 import { ulid } from 'ulid';
-import { usersTable, usersFilesTable, usersSettingsTable, settingsTable, documentsTable, categoriesTable, filesTable, type InsertCategory, type InsertPaperwork, paperworksTable, type InsertPaperworksCategories, paperworksCategoriesTable, type InsertFile, type InsertUsersFiles, type InsertUser } from './schema';
+import {
+  usersTable,
+  usersFilesTable,
+  usersSettingsTable,
+  settingsTable,
+  documentsTable,
+  categoriesTable,
+  filesTable,
+  type InsertCategory,
+  type InsertPaperwork,
+  paperworksTable,
+  type InsertPaperworksCategories,
+  paperworksCategoriesTable,
+  type InsertFile,
+  type InsertUsersFiles,
+  type InsertUser,
+  themesTable,
+  type InsertTheme
+} from './schema';
 
 // truncate table before inserting new users
+await db.delete(themesTable);
 await db.delete(usersFilesTable);
 await db.delete(usersTable);
 await db.delete(usersSettingsTable);
@@ -13,6 +32,21 @@ await db.delete(filesTable);
 await db.delete(paperworksTable);
 await db.delete(paperworksCategoriesTable);
 
+const theme1: InsertTheme = {
+  id: '01J6E4K6S5H2WYXQ5QJ9X9P6XK',
+  name: 'Theme 1',
+  value: 'theme1',
+  description: 'This is the first theme of Tindecken',
+}
+const theme1Id = await db.insert(themesTable).values(theme1).returning();
+
+const theme2: InsertTheme = {
+  id: '01J6VZN9195EKD9BKG38KFHQ6X ',
+  name: 'Theme 2',
+  value: 'theme2',
+  description: 'This is the second theme',
+}
+const theme2Id = await db.insert(themesTable).values(theme2).returning();
 
 const user: InsertUser = {
   id: ulid(),
@@ -21,6 +55,7 @@ const user: InsertUser = {
   email: 'tindecken@gmail.com',
   password: await Bun.password.hash('rivaldo'),
   systemRole: 'admin',
+  themeId: theme1Id[0].id,
   isDeleted: 0,
 };
 
@@ -71,6 +106,7 @@ const user2: InsertUser = {
   email: 'hoangnguyen@gmail.com',
   password: await Bun.password.hash('rivaldo'),
   systemRole: 'user ',
+  themeId: theme2Id[0].id,
   isDeleted: 0,
 };
 

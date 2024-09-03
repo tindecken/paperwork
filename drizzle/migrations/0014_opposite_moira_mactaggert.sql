@@ -1,0 +1,1 @@
+ALTER TABLE `themes` ADD `createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL;
