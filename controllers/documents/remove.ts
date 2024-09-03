@@ -2,49 +2,59 @@
 import { Elysia, t } from "elysia";
 import { userInfo } from "../../middlewares/userInfo";
 import { documentsTable, paperworksTable } from "../../drizzle/schema";
-import { db } from "../../drizzle/index";;
-import { eq } from "drizzle-orm";
+import { db } from "../../drizzle";
+import {and, eq} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 export const removeDocuments = (app: Elysia) =>
   app.use(userInfo).delete(
     "/remove",
-    async ({ body, userInfo }) => {
+    async ({ body, userInfo, set }) => {
       const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);
       if (!isAdminRights) {
-        throw new Error("Forbidden");
+        set.status = 403;
+        const res: GenericResponseInterface = {
+          success: false,
+          message: "Forbidden",
+          data: null,
+        }
+        return res
       }
-      const paperWork = await db
+      const documentPaperwork = await db
         .select()
-        .from(paperworksTable)
-        .where(eq(paperworksTable.id, body.paperWorkId))
-        .limit(1)
-        .execute()
-      if (paperWork.length === 0) {
-        throw new Error(`Paper work ${body.paperWorkId} not found`)
+        .from(documentsTable)
+        .where(
+          and(
+            eq(documentsTable.id, body.documentId),
+            eq(documentsTable.paperworkId, body.paperworkId)
+          )
+        )
+      if (documentPaperwork.length === 0) {
+        set.status = 404
+        const res: GenericResponseInterface = {
+          success: false,
+          message: `Document or paperwork not found`,
+          data: null
+        }
+        return res
       }
-      let deletedCount: number = 0
-      for(const documentId of body.documentIds) {
-        const deletedDocument = await db
-          .delete(documentsTable)
-          .where(eq(documentsTable.id, documentId))
-          .returning()
-          console.log('deletedDocument', deletedDocument)
-          if (deletedDocument.length !== 0) {
-            deletedCount += 1
-          }
-      }
+      await db.update(documentsTable).set({ isDeleted: 1, isCover: 0 }).where(
+        and(
+          eq(documentsTable.id, body.documentId),
+          eq(documentsTable.paperworkId, body.paperworkId)
+        )
+      )
       const res: GenericResponseInterface = {
         success: true,
-        message: `Removed ${deletedCount} document(s) of paper work ${paperWork[0].name} successfully!`,
+        message: `Removed document successfully!`,
         data: null,
       };
       return res;
     },
     {
       body: t.Object({
-        paperWorkId: t.Numeric(),
-        documentIds: t.Array(t.Numeric()),
+        paperworkId: t.String(),
+        documentId: t.String(),
       }),
     }
   );

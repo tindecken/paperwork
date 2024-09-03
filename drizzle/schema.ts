@@ -129,6 +129,7 @@ export const logsTable = sqliteTable('logs', {
   id: text('id').primaryKey(),
   actionType: text('actionType'),
   method: text('method'),
+  request: text('request'),
   message: text('message'),
   oldData: text('oldData'),
   newData: text('newData'),

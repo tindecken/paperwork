@@ -72,7 +72,6 @@ export const addDocuments = (app: Elysia) =>
     if (!isAdminRights) {
       throw new Error("Forbidden");
     }
-    console.log('userInfo', userInfo)
     const paperwork = await db.select().from(paperworksTable).where(eq(paperworksTable.id, body.paperworkId))
     console.log('paperwork', paperwork[0])
     if (paperwork.length === 0) {
@@ -109,4 +108,3 @@ export const addDocuments = (app: Elysia) =>
       paperworkId: t.String(),
     }),
   })
-  .get("/test", () => 'test');
