@@ -9,6 +9,8 @@ export const usersTable = sqliteTable('users', {
   password: text('password').notNull(),
   systemRole: text('systemRole').notNull().default('user'),
   type: text('type').notNull().default('free'),
+  themeId: text('themeId').notNull().references(() => themesTable.id, { onDelete: 'cascade' }),
+  isActivated: integer('isActivated').notNull().default(0),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
 
@@ -153,6 +155,20 @@ export const settingsTable = sqliteTable('settings', {
   isDeleted: integer('isDeleted').notNull().default(0),
 });
 
+export const themesTable = sqliteTable('themes', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  value: text('value').notNull(),
+  description: text('description'),
+  createdAt: text('createdAt')
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  createdBy: text('createdBy'),
+  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedBy: text('updatedBy'),
+  isDeleted: integer('isDeleted').notNull().default(0),
+});
+
 export type InsertUser = typeof usersTable.$inferInsert;
 export type SelectUser = typeof usersTable.$inferSelect;
 
@@ -173,3 +189,5 @@ export type InsertLog = typeof logsTable.$inferInsert;
 
 export type SelectPaperwork = typeof paperworksTable.$inferSelect;
 export type SelectPaperworkWithCategory = SelectPaperwork & { categoryName: string, categoryId: string, categoryDescription: string };
+
+export type InsertTheme = typeof themesTable.$inferInsert;
