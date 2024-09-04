@@ -1,13 +1,14 @@
 import {Elysia, t} from "elysia"
 import { db } from '../../drizzle'
-import {usersFilesTable, usersTable} from '../../drizzle/schema'
-import {comparePassword, hashPassword} from '../../libs/bcrypt'
+import {themesTable, usersFilesTable, usersTable, type InsertUser} from '../../drizzle/schema'
+import { hashPassword} from '../../libs/bcrypt'
 import * as jose from 'jose'
 import {and, eq} from 'drizzle-orm'
 import {createInsertSchema} from "drizzle-typebox"
 import type {TokenInterface} from "../../models/TokenInterface"
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface"
 import {bearer} from "@elysiajs/bearer"
+import { ulid } from "ulid"
 
 const createUser = createInsertSchema(usersTable)
 
@@ -64,10 +65,19 @@ export const auth = (app: Elysia) => app
             })
         })
         .post('/register', async ({body}) => {
+            // get first theme
+            const themes = await db.select().from(themesTable)
+            if (themes.length === 0) {
+                throw new Error("Default themes not found")
+            }
+            const defaultThemeId = themes[0].id
+            
             const hashedPassword = await Bun.password.hash(body.password)
-            const registerUser = {
+            const registerUser: InsertUser = {
+                id: ulid(),
                 ...body,
-                password: hashPassword
+                password: hashedPassword,
+                themeId: defaultThemeId
             }
             await db
                 .insert(usersTable) 
@@ -79,7 +89,12 @@ export const auth = (app: Elysia) => app
             }
             return res
         }, {
-            body: t.Omit(t.Composite([createUser, t.Object({password: t.String({minLength: 3, maxLength: 100})})]), ['id','password']),
+            body: t.Object({
+                name: t.String({maxLength: 100}),
+                userName: t.String({minLength: 3, maxLength: 100}),
+                email: t.String({format: 'email', maxLength: 100}),
+                password: t.String({minLength: 3, maxLength: 100}),
+            })
         })
         .post('/refreshtoken', async ({bearer, set}) => {
             if (!bearer) {
