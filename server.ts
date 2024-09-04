@@ -3,6 +3,7 @@ import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
 import { auth } from './controllers/auth/auth'
 import { filesController } from './controllers/files'
+import { themesController } from './controllers/themes'
 import { cookie } from "@elysiajs/cookie";
 import type { GenericResponseInterface } from './models/GenericResponseInterface'
 import { documentsController } from "./controllers/documents";
@@ -23,6 +24,7 @@ new Elysia()
         .use(filesController)
         .use(paperworksController)
         .use(categoriesController)
+        .use(themesController)
         .onError(async ({ code, error, request }: { code: any, error: any, request: Request }) => {
             const logRecord: InsertLog = {
                 id: ulid(),
@@ -48,7 +50,6 @@ new Elysia()
                     return res
             }
         })
-
     )
     .listen(3001)
 
