@@ -7,7 +7,7 @@ config({ path: '.env.local' }); // or .env.local
 
 const client = createClient({
   url: 'file:mypaperwork.db',
-  // encryptionKey: process.env.ENCRYPTION_KEY,
+  // encryptionKey: Bun.env["ENCRYPTION_KEY"]
   // url: process.env.TURSO_CONNECTION_URL!,
   // authToken: process.env.TURSO_AUTH_TOKEN!,
 });
