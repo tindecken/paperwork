@@ -55,6 +55,7 @@ const user: InsertUser = {
   email: 'tindecken@gmail.com',
   password: await Bun.password.hash('rivaldo'),
   systemRole: 'admin',
+  avatar: '',
   themeId: theme1Id[0].id,
   isDeleted: 0,
 };
@@ -106,6 +107,7 @@ const user2: InsertUser = {
   email: 'hoangnguyen@gmail.com',
   password: await Bun.password.hash('rivaldo'),
   systemRole: 'user ',
+  avatar: '',
   themeId: theme2Id[0].id,
   isDeleted: 0,
 };
