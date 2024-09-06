@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo.ts'
-import { documentsTable, paperworksTable } from '../../drizzle/schema.ts'
+import { documentsTable, paperworksCategoriesTable, paperworksTable } from '../../drizzle/schema.ts'
 import { db } from '../../drizzle/index'
 import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
@@ -10,36 +10,40 @@ import type {GenericResponseInterface} from "../../models/GenericResponseInterfa
 export const deletePaperWork = (app: Elysia) =>
   app
     .use(userInfo)
-    .delete('/delete/:paperworkId', async ({params: { paperworkId }, userInfo}) => {
+    .delete('/delete/:paperworkId', async ({params: { paperworkId }, userInfo, set}) => {
       const paperWork = await db
         .select()
         .from(paperworksTable)
         .where(eq(paperworksTable.id, paperworkId))
-        .limit(1)
-        .execute()
       if (paperWork.length === 0) {
         throw new Error("Paper work not found")
       }
-      const isAdminRights = await isAdmin(userInfo.userId, userInfo.fileId!)
+      const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!)
       if(!isAdminRights) {
-        throw new Error("Forbidden")
+        set.status = 403
+        const res: GenericResponseInterface = {
+          success: false,
+          message: "Forbidden",
+          data: null
+        }
+        return res
       }
-      // delete paperwork
-      await db
-        .delete(paperworksTable)
-        .where(eq(paperworksTable.id, paperworkId))
-      // delete document
-      await db
-        .delete(documentsTable)
-        .where(eq(documentsTable.paperworkId, paperworkId))
+      // update is Deleted = 1 for paperworksTable
+      await db.update(paperworksTable).set({ isDeleted: 1 }).where(eq(paperworksTable.id, paperworkId))
+      // update is Deleted = 1 for documentsTable
+      await db.update(documentsTable).set({ isDeleted: 1 }).where(eq(documentsTable.paperworkId, paperworkId))
+      // update isDeleted = 1 for paperworksCategoriesTable
+      await db.update(paperworksCategoriesTable).set({ isDeleted: 1 }).where(eq(paperworksCategoriesTable.paperworkId, paperworkId))
+
+      // return success response with message and data as null
       const res: GenericResponseInterface = {
         success: true,
-        message: `Delete paper work ${paperWork[0].name} successfully!`,
+        message: `Delete paperwork ${paperWork[0].name} successfully!`,
         data: null
       }
       return res
     }, {
       params: t.Object({
-        paperworkId: t.Numeric()
+        paperworkId: t.String({minLength: 26, maxLength: 26})
       })
     })
