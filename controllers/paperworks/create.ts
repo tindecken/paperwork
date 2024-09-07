@@ -8,7 +8,6 @@ import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
 import { ulid } from 'ulid'
 
-const createPaperorkSchema = createInsertSchema(paperworksTable)
 export const createPaperWork = (app: Elysia) =>
   app
     .use(userInfo)
@@ -56,7 +55,6 @@ export const createPaperWork = (app: Elysia) =>
         // create documents for uploaded files
         if (body.files) {
           for (const file of body.files) {
-            console.log(`Uploading file: ${file.name}`)
             const fileArrayBuffer = await file.arrayBuffer();
             if (fileArrayBuffer.byteLength === 0) throw new Error(`File ${file.name} is empty!`)
             const blobData = new Uint8Array(fileArrayBuffer);

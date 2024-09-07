@@ -53,7 +53,9 @@ export const auth = (app: Elysia) => app
                 .setExpirationTime('24h')
                 .sign(new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
             const res: GenericResponseInterface = {
-                success: true, message: "Login success", data: {
+                success: true, 
+                message: "Login success", 
+                data: {
                     token
                 }
             }
