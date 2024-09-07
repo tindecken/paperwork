@@ -17,7 +17,7 @@ export const staticDataController = (app: Elysia) =>
             )
         })
         .get('/error/test', () => {
-                throw new Error('Something went wrong');
+                throw new Error('Something went wrong!!');
             },
             // Local hooks
             {
