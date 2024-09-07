@@ -12,9 +12,13 @@ import {categoriesController} from "./controllers/categories";
 import type {InsertLog} from "./drizzle/schema.ts";
 import {ulid} from "ulid";
 import {log} from "./libs/logging.ts";
-
 new Elysia()
     .use(swagger())
+    .group('/test', (app) => 
+        app.get('/env', async () => {
+            return Bun.env
+        })
+    )
     .group('/api', (app) =>
         app
         .use(cors())
