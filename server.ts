@@ -51,5 +51,11 @@ new Elysia()
             }
         })
     )
-    .listen(3001)
+    .listen({
+        port: 3001,
+        tls: {
+            cert: Bun.file('/etc/letsencrypt/live/tindecken.xyz/fullchain.pem'),
+            key: Bun.file('/etc/letsencrypt/live/tindecken.xyz/privkey.pem')
+          }
+    })
 
