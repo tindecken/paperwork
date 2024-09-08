@@ -9,6 +9,7 @@ export const usersTable = sqliteTable('users', {
   password: text('password').notNull(),
   systemRole: text('systemRole').notNull().default('user'),
   type: text('type').notNull().default('free'),
+  avatar: blob('avatar'),
   themeId: text('themeId').notNull().references(() => themesTable.id, { onDelete: 'cascade' }),
   isActivated: integer('isActivated').notNull().default(0),
   isDeleted: integer('isDeleted').notNull().default(0),

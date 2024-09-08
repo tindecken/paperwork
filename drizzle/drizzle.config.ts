@@ -1,7 +1,4 @@
-import { config } from 'dotenv';
 import { defineConfig } from 'drizzle-kit';
-
-config({ path: '.env' });
 
 export default defineConfig({
   schema: './drizzle/schema.ts',
@@ -9,8 +6,7 @@ export default defineConfig({
   dialect: 'sqlite',
   driver: 'turso',
   dbCredentials: {
-    url: 'file:mypaperwork.db',
-    // url: process.env.TURSO_CONNECTION_URL!,
-    // authToken: process.env.TURSO_AUTH_TOKEN!,
+    url: Bun.env['TURSO_CONNECTION_URL']!,
+    authToken: Bun.env['TURSO_AUTH_TOKEN']!,
   },
 });
