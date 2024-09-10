@@ -7,7 +7,7 @@
     "migrate": "drizzle-kit migrate --config=./drizzle/drizzle.config.ts",
     "pull": "drizzle-kit pull --config=./drizzle/drizzle.config.ts",
     "drop": "drizzle-kit drop --config=./drizzle/drizzle.config.ts",
-    "dev": "bun --watch server.ts",
+    "dev": "NODE_ENV=local bun --watch server.ts",
     "build": "bun build server.ts",
     "start": "NODE_ENV=production bun server.ts",
     "seed": "bun run ./drizzle/seed.ts",

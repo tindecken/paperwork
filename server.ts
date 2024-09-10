@@ -12,11 +12,20 @@ import {categoriesController} from "./controllers/categories";
 import type {InsertLog} from "./drizzle/schema.ts";
 import {ulid} from "ulid";
 import {log} from "./libs/logging.ts";
+const listenPort = 3001
+const tls = (process.env.NODE_ENV === 'production') ? {
+    cert: Bun.file('/etc/letsencrypt/live/tindecken.xyz/fullchain.pem'),
+    key: Bun.file('/etc/letsencrypt/live/tindecken.xyz/privkey.pem')
+}: {}
+
 new Elysia()
     .use(swagger())
     .group('/test', (app) => 
         app.get('/env', async () => {
-            return Bun.env
+            return {
+                'process.env.NODE_ENV': process.env.NODE_ENV,
+                'process.env.TURSO_CONNECTION_URL': process.env['TURSO_CONNECTION_URL'] || 'not set',
+            }
         })
     )
     .group('/api', (app) =>
@@ -56,10 +65,7 @@ new Elysia()
         })
     )
     .listen({
-        port: 3001,
-        // tls: {
-        //     cert: Bun.file('/etc/letsencrypt/live/tindecken.xyz/fullchain.pem'),
-        //     key: Bun.file('/etc/letsencrypt/live/tindecken.xyz/privkey.pem')
-        //   }
+        port: listenPort,
+        tls
     })
 
