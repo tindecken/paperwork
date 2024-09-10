@@ -14,8 +14,8 @@ import {ulid} from "ulid";
 import {log} from "./libs/logging.ts";
 const listenPort = 3001
 const tls = (process.env.NODE_ENV === 'production') ? {
-    cert: Bun.file('/etc/letsencrypt/live/tindecken.xyz/fullchain.pem'),
-    key: Bun.file('/etc/letsencrypt/live/tindecken.xyz/privkey.pem')
+    cert: Bun.file(process.env['CERT']!),
+    key: Bun.file(process.env['KEY']!)
 }: {}
 
 new Elysia()
