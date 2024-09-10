@@ -5,7 +5,7 @@ CREATE TABLE `categories` (
 	`description` text,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`createdBy` text,
-	`updatedAt` integer,
+	`updatedAt` text,
 	`updatedBy` text,
 	`isDeleted` integer DEFAULT 0 NOT NULL,
 	FOREIGN KEY (`fileId`) REFERENCES `files`(`id`) ON UPDATE no action ON DELETE cascade
@@ -19,6 +19,9 @@ CREATE TABLE `documents` (
 	`fileBlob` blob NOT NULL,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`createdBy` text,
+	`updatedAt` text,
+	`updatedBy` text,
+	`isCover` integer DEFAULT 0 NOT NULL,
 	`isDeleted` integer DEFAULT 0 NOT NULL,
 	FOREIGN KEY (`paperworkId`) REFERENCES `paperworks`(`id`) ON UPDATE no action ON DELETE cascade
 );
@@ -29,15 +32,16 @@ CREATE TABLE `files` (
 	`description` text,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`createdBy` text,
-	`updatedAt` integer,
+	`updatedAt` text,
 	`updatedBy` text,
 	`isDeleted` integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `logs` (
-	`id` integer PRIMARY KEY NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
 	`actionType` text,
 	`method` text,
+	`request` text,
 	`message` text,
 	`oldData` text,
 	`newData` text,
@@ -52,7 +56,7 @@ CREATE TABLE `paperworksCategories` (
 	`categoryId` text NOT NULL,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`createdBy` text,
-	`updatedAt` integer,
+	`updatedAt` text,
 	`updatedBy` text,
 	`isDeleted` integer DEFAULT 0 NOT NULL,
 	FOREIGN KEY (`paperworkId`) REFERENCES `paperworks`(`id`) ON UPDATE no action ON DELETE cascade,
@@ -63,12 +67,12 @@ CREATE TABLE `paperworks` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`description` text,
-	`issuedAt` integer,
+	`issuedAt` text,
 	`price` real,
 	`priceCurrency` text,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`createdBy` text,
-	`updatedAt` integer,
+	`updatedAt` text,
 	`updatedBy` text,
 	`isDeleted` integer DEFAULT 0 NOT NULL
 );
@@ -79,7 +83,19 @@ CREATE TABLE `settings` (
 	`value` text NOT NULL,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`createdBy` text,
-	`updatedAt` integer,
+	`updatedAt` text,
+	`updatedBy` text,
+	`isDeleted` integer DEFAULT 0 NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `themes` (
+	`id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`value` text NOT NULL,
+	`description` text,
+	`createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`createdBy` text,
+	`updatedAt` text,
 	`updatedBy` text,
 	`isDeleted` integer DEFAULT 0 NOT NULL
 );
@@ -92,8 +108,9 @@ CREATE TABLE `userFiles` (
 	`isSelected` integer DEFAULT 0 NOT NULL,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`createdBy` text,
-	`updatedAt` integer,
+	`updatedAt` text,
 	`updatedBy` text,
+	`isDeleted` integer DEFAULT 0 NOT NULL,
 	FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`fileId`) REFERENCES `files`(`id`) ON UPDATE no action ON DELETE cascade
 );
@@ -103,7 +120,7 @@ CREATE TABLE `usersSettings` (
 	`userId` text NOT NULL,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`createdBy` text,
-	`updatedAt` integer,
+	`updatedAt` text,
 	`updatedBy` text,
 	FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`userId`) REFERENCES `settings`(`id`) ON UPDATE no action ON DELETE cascade
@@ -117,9 +134,14 @@ CREATE TABLE `users` (
 	`password` text NOT NULL,
 	`systemRole` text DEFAULT 'user' NOT NULL,
 	`type` text DEFAULT 'free' NOT NULL,
-	`isDeleted` integer DEFAULT 0 NOT NULL
+	`avatar` blob,
+	`themeId` text NOT NULL,
+	`isActivated` integer DEFAULT 0 NOT NULL,
+	`isDeleted` integer DEFAULT 0 NOT NULL,
+	FOREIGN KEY (`themeId`) REFERENCES `themes`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `fileId_name` ON `categories` (`fileId`,`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `settings_key_unique` ON `settings` (`key`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_userName_unique` ON `users` (`userName`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);
