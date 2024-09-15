@@ -78,9 +78,6 @@ export const getByFileid = (app: Elysia) =>
             )
             // update ppws with cover
             if (documentsWithCover.length > 0) {
-              console.log('typeOf:', typeof documentsWithCover[0].fileBlob)
-              const arrBuf = (documentsWithCover[0].fileBlob as Uint8Array).buffer
-              console.log('arrBuf:', arrBuf)
               ppw.coverBlob = documentsWithCover[0].fileBlob
               ppw.coverFileName = documentsWithCover[0].fileName
               ppw.coverFileSize = documentsWithCover[0].fileSize as number
