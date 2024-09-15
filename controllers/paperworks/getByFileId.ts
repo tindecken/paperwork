@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import {categoriesTable, paperworksCategoriesTable, paperworksTable, type SelectPaperworkWithCategory} from '../../drizzle/schema'
+import {categoriesTable, documentsTable, paperworksCategoriesTable, paperworksTable, type SelectPaperworkWithCategory} from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import {eq, and } from "drizzle-orm"
@@ -29,7 +29,10 @@ export const getByFileid = (app: Elysia) =>
                    ...p.paperworks,
                    categoryName: cat.name,
                    categoryDescription: cat.description ?? '',
-                   categoryId: cat.id
+                   categoryId: cat.id,
+                   coverBlob: null,
+                   coverFileName: null,
+                   coverFileSize: null,
                 }))
             })
         )
@@ -63,6 +66,27 @@ export const getByFileid = (app: Elysia) =>
           || (p.issuedAt && p.issuedAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
           || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase())))
         }
+        // get covers for paperworks
+        await Promise.all(
+          ppws.map(async (ppw) => {
+            const documentsWithCover = await db.select().from(documentsTable).where(
+                and(
+                    eq(documentsTable.paperworkId, ppw.id),
+                    eq(documentsTable.isCover, 1),
+                    eq(documentsTable.isDeleted, 0)
+                )
+            )
+            // update ppws with cover
+            if (documentsWithCover.length > 0) {
+              console.log('typeOf:', typeof documentsWithCover[0].fileBlob)
+              const arrBuf = (documentsWithCover[0].fileBlob as Uint8Array).buffer
+              console.log('arrBuf:', arrBuf)
+              ppw.coverBlob = documentsWithCover[0].fileBlob
+              ppw.coverFileName = documentsWithCover[0].fileName
+              ppw.coverFileSize = documentsWithCover[0].fileSize as number
+            }
+        })
+        )
         const res: GenericResponseInterface = {
           success: true,
           message: `Get ${ppws.length} paperworks successfully!`,
