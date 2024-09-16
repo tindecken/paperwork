@@ -8,7 +8,7 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
 import { createInsertSchema } from "drizzle-typebox"
-import { filesTable, usersFilesTable } from '../../drizzle/schema'
+import { categoriesTable, filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import * as jose from 'jose'
@@ -37,6 +37,12 @@ export const createFile = (app: Elysia) =>
             createdBy: userInfo.userName
         }
         await db.insert(usersFilesTable).values(newUserFile)
+        // create new Uncategory for the file
+        await db.insert(categoriesTable).values({
+            id: ulid(),
+            fileId: createdfile[0].id,
+            name: 'Uncategorized'
+        })
         const alg = process.env["JWT_ALGORITHM"] || 'HS256'
             const token = await new jose.SignJWT({
                 userId: userInfo.userId,
