@@ -2,7 +2,7 @@ import { Elysia, t } from 'elysia';
 import {categoriesTable, documentsTable, paperworksCategoriesTable, paperworksTable, type SelectPaperworkWithCategory} from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
-import {eq, and } from "drizzle-orm"
+import {eq, and, count } from "drizzle-orm"
 import {userInfo} from "../../middlewares/userInfo.ts";
 
 export const getByFileid = (app: Elysia) =>
@@ -33,6 +33,7 @@ export const getByFileid = (app: Elysia) =>
                    coverBlob: null,
                    coverFileName: null,
                    coverFileSize: null,
+                   documentCount: null
                 }))
             })
         )
@@ -83,6 +84,18 @@ export const getByFileid = (app: Elysia) =>
               ppw.coverFileSize = documentsWithCover[0].fileSize as number
             }
         })
+        )
+        // get number of document for each paperwork
+        await Promise.all(
+          ppws.map(async (ppw) => {
+            const documentsCount = await db.select({ count: count() }).from(documentsTable).where(
+                and(
+                    eq(documentsTable.paperworkId, ppw.id),
+                    eq(documentsTable.isDeleted, 0)
+                )
+            )
+            ppw.documentCount = documentsCount[0].count as number;
+          })
         )
         const res: GenericResponseInterface = {
           success: true,
