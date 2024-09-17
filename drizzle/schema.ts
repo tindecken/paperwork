@@ -189,6 +189,6 @@ export type InsertDocument = typeof documentsTable.$inferInsert;
 export type InsertLog = typeof logsTable.$inferInsert;
 
 export type SelectPaperwork = typeof paperworksTable.$inferSelect;
-export type SelectPaperworkWithCategory = SelectPaperwork & { categoryName: string, categoryId: string, categoryDescription: string, coverBlob?: any | null, coverFileName?: string | null, coverFileSize?: number | null };
+export type SelectPaperworkWithCategory = SelectPaperwork & { categoryName: string, categoryId: string, categoryDescription: string, coverBlob?: any | null, coverFileName?: string | null, coverFileSize?: number | null, documentCount: number | null };
 
 export type InsertTheme = typeof themesTable.$inferInsert;
