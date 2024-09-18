@@ -12,6 +12,11 @@ export const createPaperWork = (app: Elysia) =>
   app
     .use(userInfo)
     .post('/create', async ({body, userInfo, set}) => {
+      console.log('createPaperwork body', body)
+      if (body.name.trim().length == 0) {
+        set.status = 400
+        throw new Error('Name is required!')
+      }
       const category = await db.query.categoriesTable.findFirst({
         where: eq(categoriesTable.id, body.categoryId),
       })
@@ -36,10 +41,10 @@ export const createPaperWork = (app: Elysia) =>
       await db.transaction(async (tx) => {
         const ppw: InsertPaperwork = {
           id: ulid(),
-          name: body.name,
+          name: body.name.trim(),
           description: body.description,
-          issuedAt: body.date,
-          price: body.price,
+          issuedAt: body.issueAt,
+          price: body.price ? parseFloat(body.price) : null,
           priceCurrency: body.priceCurrency,
           createdBy: userInfo.userName
         }
@@ -85,8 +90,8 @@ export const createPaperWork = (app: Elysia) =>
         categoryId: t.String(),
         name: t.String(),
         description: t.Optional(t.String()),
-        date: t.Optional(t.String()),
-        price: t.Optional(t.Number()),
+        issueAt: t.Optional(t.String()),
+        price: t.Optional(t.String()),
         priceCurrency: t.Optional(t.String()),
       })
     })
