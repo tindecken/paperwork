@@ -37,9 +37,16 @@ export const getByFileid = (app: Elysia) =>
                 }))
             })
         )
-        // limit
-        if (query.pageNumber && query.pageSize) {
-          ppws = ppws.slice((query.pageNumber - 1) * query.pageSize, query.pageNumber * query.pageSize)
+        // filter
+        if (query.filterValue) {
+          ppws = ppws.filter((p) => p.name.toLowerCase().includes(query.filterValue!.toLowerCase()) 
+          || (p.description && p.description.toLowerCase().includes(query.filterValue!.toLowerCase())) 
+          || (p.categoryName.toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.categoryDescription && p.categoryDescription.toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.price && p.price.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.priceCurrency && p.priceCurrency.toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.issuedAt && p.issuedAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase())))
         }
         // sort
         if (query.sortField && query.sortDirection) {
@@ -57,16 +64,11 @@ export const getByFileid = (app: Elysia) =>
             return a.createdAt! > b.createdAt! ? -1 : 1;
           });
         }
-        if (query.filterValue) {
-          ppws = ppws.filter((p) => p.name.toLowerCase().includes(query.filterValue!.toLowerCase()) 
-          || (p.description && p.description.toLowerCase().includes(query.filterValue!.toLowerCase())) 
-          || (p.categoryName.toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.categoryDescription && p.categoryDescription.toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.price && p.price.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.priceCurrency && p.priceCurrency.toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.issuedAt && p.issuedAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase())))
+        // limit
+        if (query.pageNumber && query.pageSize) {
+          ppws = ppws.slice((query.pageNumber - 1) * query.pageSize, query.pageNumber * query.pageSize)
         }
+        
         // get covers for paperworks
         await Promise.all(
           ppws.map(async (ppw) => {
