@@ -21,7 +21,7 @@ export const updatePaperWork = (app: Elysia) =>
       if (paperWork.length === 0) {
         throw new Error("Paper work not found")
       }
-      const isAdminRights = await isAdmin(userInfo.userId, userInfo.fileId!)
+      const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!)
       if(!isAdminRights) {
         throw new Error("Forbidden")
       }
@@ -30,7 +30,7 @@ export const updatePaperWork = (app: Elysia) =>
         .set({
           name: body.name,
           description: body.description,
-          date: body.date,
+          issuedAt: body.date,
           price: body.price,
           updatedAt: sql`CURRENT_TIMESTAMP`,
           updatedBy: userInfo.userName
@@ -48,9 +48,9 @@ export const updatePaperWork = (app: Elysia) =>
         name: t.Optional(t.String()),
         description: t.Optional(t.String()),
         date: t.Optional(t.String()),
-        price: t.Optional(t.String()),
+        price: t.Optional(t.Number()),
       }),
       params: t.Object({
-        paperworkId: t.Numeric()
+        paperworkId: t.String()
       })
     })

@@ -180,6 +180,7 @@ export type InsertUsersFiles = typeof usersFilesTable.$inferInsert;
 export type SelectUsersFiles = typeof usersFilesTable.$inferSelect;
 
 export type InsertCategory = typeof categoriesTable.$inferInsert;
+export type SelectCategory = typeof categoriesTable.$inferSelect;
 
 export type InsertPaperwork = typeof paperworksTable.$inferInsert;
 
