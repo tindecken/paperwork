@@ -4,4 +4,5 @@ export interface GenericResponseInterface {
     data: Object | null,
     pageNumber?: number,
     pageSize?: number,
+    totalRecords?: number,
 }

@@ -12,7 +12,6 @@ export const createPaperWork = (app: Elysia) =>
   app
     .use(userInfo)
     .post('/create', async ({body, userInfo, set}) => {
-      console.log('createPaperwork body', body)
       if (body.name.trim().length == 0) {
         set.status = 400
         throw new Error('Name is required!')

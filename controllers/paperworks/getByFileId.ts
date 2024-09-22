@@ -48,6 +48,7 @@ export const getByFileid = (app: Elysia) =>
           || (p.issuedAt && p.issuedAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
           || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase())))
         }
+        const totalCount = ppws.length;
         // sort
         if (query.sortField && query.sortDirection) {
           ppws.sort((a, b) => {
@@ -102,7 +103,8 @@ export const getByFileid = (app: Elysia) =>
         const res: GenericResponseInterface = {
           success: true,
           message: `Get ${ppws.length} paperworks successfully!`,
-          data: ppws
+          data:ppws,
+          totalRecords: totalCount,
         }
         return res
       }, {
