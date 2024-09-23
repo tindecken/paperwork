@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import {categoriesTable, documentsTable, paperworksCategoriesTable, paperworksTable, type SelectPaperworkWithCategory} from '../../drizzle/schema.ts'
+import {categoriesTable, documentsTable, paperworksCategoriesTable, paperworksTable, type SelectCategory, type SelectPaperworkWithCategory} from '../../drizzle/schema.ts'
 import { db } from '../../drizzle/index.ts'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface.ts';
 import {eq, and, count } from "drizzle-orm"
@@ -27,6 +27,7 @@ export const getByFileid = (app: Elysia) =>
             eq(paperworksCategoriesTable.isDeleted, 0)
           )
         )
+        const categories: SelectCategory[] = []
         await Promise.all(
           paperworkCategories.map(async (pwCat) => {
             const cat = await db.select().from(categoriesTable).where(
@@ -35,6 +36,9 @@ export const getByFileid = (app: Elysia) =>
                 eq(categoriesTable.isDeleted, 0)
               )
             )
+            if (cat.length > 0) {
+              categories.push({...cat[0]})
+            }
           })
         )
         // get attachments and images
@@ -66,11 +70,18 @@ export const getByFileid = (app: Elysia) =>
               )
             )
             if (fileBlobDoc.length > 0) {
-              return {...doc, fileBlobDoc[0].fileBlob} }
-            return {...doc, fileBlobDoc[0].fileBlob} }
+              return {...doc, fileBlob: fileBlobDoc[0].fileBlob} 
+            }
           })
         )
         const documentAttachments = ppwDocuments.filter((doc) => !documentImages.includes(doc))
+        
+        const ppwDetails: PaperworkDetails = {
+          ...pw[0],
+          categories: categories,
+          attachments: documentAttachments,
+          images: documentImagesWithBlobs,
+        }
         const res: GenericResponseInterface = {
           success: true,
           message: `Get ${ppws.length} paperworks successfully!`,
