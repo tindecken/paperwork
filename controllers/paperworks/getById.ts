@@ -6,7 +6,7 @@ import {eq, and, count } from "drizzle-orm"
 import {userInfo} from "../../middlewares/userInfo.ts";
 import type { PaperworkDetails } from '../../models/PaperworkDetails.ts';
 
-export const getByFileid = (app: Elysia) =>
+export const getById = (app: Elysia) =>
   app
       .use(userInfo)
       .get('/get/:paperworkId', async ({ userInfo, query, params: {paperworkId}, set }) => {
@@ -60,8 +60,14 @@ export const getByFileid = (app: Elysia) =>
         || doc.fileName.endsWith('.svg') 
         || doc.fileName.endsWith('.bmp') 
         || doc.fileName.endsWith('.tiff'))
+        const documentImagesWithBlobs: {
+          id: string
+          fileName: string
+          fileSize: number
+          fileBlob: any | null
+        }[] = []
         // get more fileBlob for documentImages
-        const documentImagesWithBlobs = await Promise.all(
+        await Promise.all(
           documentImages.map(async (doc) => {
             const fileBlobDoc = await db.select({ fileBlob: documentsTable.fileBlob}).from(documentsTable).where(
               and(
@@ -70,10 +76,14 @@ export const getByFileid = (app: Elysia) =>
               )
             )
             if (fileBlobDoc.length > 0) {
-              return {...doc, fileBlob: fileBlobDoc[0].fileBlob} 
+              documentImagesWithBlobs.push({
+                ...doc,
+                fileBlob: fileBlobDoc[0].fileBlob,
+              })
             }
           })
         )
+        console.log('documentImagesWithBlobs', documentImagesWithBlobs)
         const documentAttachments = ppwDocuments.filter((doc) => !documentImages.includes(doc))
         
         const ppwDetails: PaperworkDetails = {
@@ -84,9 +94,8 @@ export const getByFileid = (app: Elysia) =>
         }
         const res: GenericResponseInterface = {
           success: true,
-          message: `Get ${ppws.length} paperworks successfully!`,
-          data:ppws,
-          totalRecords: totalCount,
+          message: `Get paperwork successfully!`,
+          data:ppwDetails,
         }
         return res
       }, {
