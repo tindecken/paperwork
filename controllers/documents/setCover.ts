@@ -7,7 +7,8 @@ import {and, eq} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 export const setCover = (app: Elysia) =>
-  app.use(userInfo).post(
+  app.use(userInfo)
+.post(
     "/setCover",
     async ({ body, userInfo, set }) => {
       const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);
