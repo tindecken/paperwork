@@ -20,7 +20,6 @@ export const download = (app: Elysia) =>
       set.status = 404;
       throw new Error("Document not found or deleted")
     }
-    console.log(documents[0])
     const res: GenericResponseInterface = {
       success: true,
       message: "Get document successfully!",

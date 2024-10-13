@@ -10,7 +10,6 @@ export const getById = (app: Elysia) =>
   app
       .use(userInfo)
       .get('/get/:paperworkId', async ({ userInfo, query, params: {paperworkId}, set }) => {
-        console.log('paperworkId', paperworkId)
         const pw = await db.select().from(paperworksTable).where(
           and(
             eq(paperworksTable.id, paperworkId),
@@ -83,7 +82,6 @@ export const getById = (app: Elysia) =>
             }
           })
         )
-        console.log('documentImagesWithBlobs', documentImagesWithBlobs)
         const documentAttachments = ppwDocuments.filter((doc) => !documentImages.includes(doc))
         
         const ppwDetails: PaperworkDetails = {

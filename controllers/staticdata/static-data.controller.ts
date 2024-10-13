@@ -22,7 +22,6 @@ export const staticDataController = (app: Elysia) =>
             // Local hooks
             {
                 beforeHandle({set}) {
-                    console.log(`Before Handler - Status Code: ${set.status}`);
                 }
             }
         )
