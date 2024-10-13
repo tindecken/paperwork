@@ -66,14 +66,11 @@ export const addDocuments = (app: Elysia) =>
     }
   )
   .post("/upload", async ({ body, userInfo }) => {
-    console.log('userInfo', userInfo)
-    console.log('body', body)
     const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);
     if (!isAdminRights) {
       throw new Error("Forbidden");
     }
     const paperwork = await db.select().from(paperworksTable).where(eq(paperworksTable.id, body.paperworkId))
-    console.log('paperwork', paperwork[0])
     if (paperwork.length === 0) {
       throw new Error(`Paper work ${body.paperworkId} not found`)
     }
@@ -94,7 +91,6 @@ export const addDocuments = (app: Elysia) =>
         fileBlob: blobData,
         createdBy: userInfo.userName,
       };
-      console.log('newDocument', newDocument)
       await db.insert(documentsTable).values(newDocument);
     const res: GenericResponseInterface = {
       success: true,

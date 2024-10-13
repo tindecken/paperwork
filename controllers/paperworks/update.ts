@@ -17,7 +17,6 @@ export const updatePaperWork = (app: Elysia) =>
         .where(eq(paperworksTable.id, paperworkId))
         .limit(1)
         .execute()
-      console.log('paperwork', paperWork)
       if (paperWork.length === 0) {
         throw new Error("Paper work not found")
       }

@@ -192,5 +192,3 @@ const paperworkCategory2: InsertPaperworksCategories = {
 await db.insert(paperworksCategoriesTable).values(paperworkCategory2);
 
 const hoangnguyenUser = await db.insert(usersTable).values(user2).returning();
-console.log(`User Tindecken's ID: ${tindeckenUser[0].id}`);
-console.log(`User Hoang Nguyen's ID: ${hoangnguyenUser[0].id}`);
