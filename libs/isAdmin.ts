@@ -4,8 +4,6 @@ import {usersFilesTable, usersTable} from "../drizzle/schema.ts";
 
 // Getting admin rights
 export const isAdmin = async (userId: string, selectedFileId: string) => {
-  console.log('userId', userId)
-  console.log('selectedFileId', selectedFileId)
   if (selectedFileId === undefined) {
     throw new Error('Please selected file first')
   }
