@@ -23,7 +23,6 @@ export const getFiles = (app: Elysia) =>
                 data: [],
             } as GenericResponseInterface
         }
-        console.log('usersFiles', usersFiles)
         const files = await db.select().from(filesTable).where(inArray(filesTable.id, usersFiles.map(uf => uf.fileId)))
         const res: GenericResponseInterface = {
             success: true,

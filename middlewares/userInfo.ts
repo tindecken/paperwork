@@ -18,7 +18,6 @@ export const userInfo = (app: Elysia) =>
         try {
             jwtDecoded = await jose.jwtVerify(bearer, new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
         } catch (error) {
-            console.log(error)
         }
         if (jwtDecoded != null) {
             const userInfo: TokenInterface = jwtDecoded.payload
