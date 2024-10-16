@@ -1,5 +1,5 @@
-import { Elysia, t } from 'elysia';
-import {categoriesTable, paperworksCategoriesTable, paperworksTable} from '../../drizzle/schema'
+import { Elysia } from 'elysia';
+import {categoriesTable, paperworksCategoriesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import {eq, and } from "drizzle-orm"
