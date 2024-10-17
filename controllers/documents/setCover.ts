@@ -1,9 +1,9 @@
 // remove documents from paper work
 import { Elysia, t } from "elysia";
 import { userInfo } from "../../middlewares/userInfo";
-import { documentsTable } from "../../drizzle/schema";
+import {documentsTable, paperworksTable} from "../../drizzle/schema";
 import { db } from "../../drizzle";
-import {and, eq} from "drizzle-orm";
+import {and, eq, sql} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 export const setCover = (app: Elysia) =>
@@ -47,6 +47,11 @@ export const setCover = (app: Elysia) =>
           eq(documentsTable.id, body.documentId)
         )
       )
+      // update paperwork updatedAt and updatedBy
+      await db.update(paperworksTable).set({
+        updatedAt: sql`(CURRENT_TIMESTAMP)`,
+        updatedBy: userInfo.userName
+      }).where(eq(paperworksTable.id, body.paperworkId))
       const res: GenericResponseInterface = {
         success: true,
         message: `Set cover for paperwork success!`,

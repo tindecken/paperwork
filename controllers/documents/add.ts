@@ -3,7 +3,7 @@ import { Elysia, t } from "elysia";
 import { userInfo } from "../../middlewares/userInfo";
 import { documentsTable, paperworksTable, type InsertDocument } from "../../drizzle/schema";
 import { db } from "../../drizzle/index";
-import {eq} from "drizzle-orm";
+import {eq, sql} from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 import { isAdmin } from "../../libs/isAdmin";
 import { ulid } from "ulid";
@@ -51,6 +51,7 @@ export const addDocuments = (app: Elysia) =>
         };
         await db.insert(documentsTable).values(newDocument);
       }
+
       const res: GenericResponseInterface = {
         success: true,
         message: `Added ${body.files.length} document(s) to paper work ${paperWork[0].name} successfully!`,
@@ -92,6 +93,11 @@ export const addDocuments = (app: Elysia) =>
         createdBy: userInfo.userName,
       };
       await db.insert(documentsTable).values(newDocument);
+    // update paperwork updatedAt and updatedBy
+    await db.update(paperworksTable).set({
+      updatedAt: sql`(CURRENT_TIMESTAMP)`,
+      updatedBy: userInfo.userName
+    }).where(eq(paperworksTable.id, body.paperworkId))
     const res: GenericResponseInterface = {
       success: true,
       message: `Added ${body.file.name} document to paper work ${paperwork[0].name} successfully!`,

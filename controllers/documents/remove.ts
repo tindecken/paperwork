@@ -1,9 +1,9 @@
 // remove documents from paper work
 import { Elysia, t } from "elysia";
 import { userInfo } from "../../middlewares/userInfo";
-import { documentsTable, paperworksTable } from "../../drizzle/schema";
+import {documentsTable, paperworksTable} from "../../drizzle/schema";
 import { db } from "../../drizzle";
-import {and, eq} from "drizzle-orm";
+import {and, eq, sql} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 export const removeDocuments = (app: Elysia) =>
@@ -44,6 +44,11 @@ export const removeDocuments = (app: Elysia) =>
           eq(documentsTable.paperworkId, body.paperworkId)
         )
       )
+      // update paperwork updatedAt and updatedBy
+      await db.update(paperworksTable).set({
+        updatedAt: sql`(CURRENT_TIMESTAMP)`,
+        updatedBy: userInfo.userName
+      }).where(eq(paperworksTable.id, body.paperworkId))
       const res: GenericResponseInterface = {
         success: true,
         message: `Removed document successfully!`,
