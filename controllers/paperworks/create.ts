@@ -1,6 +1,5 @@
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
-import { createInsertSchema } from "drizzle-typebox"
 import {documentsTable, paperworksTable, categoriesTable, type InsertPaperwork, paperworksCategoriesTable} from '../../drizzle/schema.ts'
 import { db } from '../../drizzle'
 import {isAdmin} from "../../libs/isAdmin.ts";

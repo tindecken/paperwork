@@ -7,7 +7,7 @@ import {and, eq} from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 export const download = (app: Elysia) =>
   app.use(userInfo)
-  .post("/download", async ({ body, userInfo, set }) => {
+  .post("/download", async ({ body, set }) => {
     const documents = await db
     .select()
     .from(documentsTable)
