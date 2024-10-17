@@ -7,10 +7,10 @@ import { eq, sql } from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 
 
-export const updatePaperWork = (app: Elysia) =>
-  app
+export const updatePaperWork = (app: Elysia) => {
+  return app
     .use(userInfo)
-    .put('/update/:paperworkId', async ({body, params: { paperworkId }, userInfo}) => {
+    .put('/update/:paperworkId', async ({body, params: {paperworkId}, userInfo}) => {
       const paperWork = await db
         .select()
         .from(paperworksTable)
@@ -21,7 +21,7 @@ export const updatePaperWork = (app: Elysia) =>
         throw new Error("Paper work not found")
       }
       const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!)
-      if(!isAdminRights) {
+      if (!isAdminRights) {
         throw new Error("Forbidden")
       }
       const updatedPaperWork = await db
@@ -29,8 +29,9 @@ export const updatePaperWork = (app: Elysia) =>
         .set({
           name: body.name,
           description: body.description,
-          issuedAt: body.date,
+          issuedAt: body.issueAt,
           price: body.price,
+          priceCurrency: body.priceCurrency,
           updatedAt: sql`CURRENT_TIMESTAMP`,
           updatedBy: userInfo.userName
         })
@@ -46,10 +47,12 @@ export const updatePaperWork = (app: Elysia) =>
       body: t.Object({
         name: t.Optional(t.String()),
         description: t.Optional(t.String()),
-        date: t.Optional(t.String()),
+        issueAt: t.Optional(t.String()),
         price: t.Optional(t.Number()),
+        priceCurrency: t.Optional(t.String()),
       }),
       params: t.Object({
         paperworkId: t.String()
       })
-    })
+    });
+}
