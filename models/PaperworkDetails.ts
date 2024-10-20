@@ -12,5 +12,6 @@ export interface PaperworkDetails extends SelectPaperwork {
         fileName: string
         fileSize: number
         fileBlob: unknown
+        isCover: boolean
     }[],
 }

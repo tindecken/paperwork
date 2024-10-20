@@ -36,9 +36,10 @@ export const createPaperWork = (app: Elysia) =>
           }
         }
       }
+      const ppwULID = ulid()
       await db.transaction(async (tx) => {
         const ppw: InsertPaperwork = {
-          id: ulid(),
+          id: ppwULID,
           name: body.name.trim(),
           description: body.description,
           issuedAt: body.issueAt,
@@ -67,7 +68,7 @@ export const createPaperWork = (app: Elysia) =>
               fileSize: file.size,
               fileName: file.name,
               fileBlob: blobData,
-              createdBy: userInfo.userName
+              createdBy: userInfo.userName,
             }
             await tx
               .insert(documentsTable)
@@ -76,6 +77,19 @@ export const createPaperWork = (app: Elysia) =>
           }
         }
       })
+      // Set cover for the paperwork
+      const documents = await db.select().from(documentsTable).where(eq(documentsTable.paperworkId, ppwULID))
+      const documentImages = documents.filter((doc) =>
+        doc.fileName.endsWith('.jpg')
+        || doc.fileName.endsWith('.png')
+        || doc.fileName.endsWith('.jpeg')
+        || doc.fileName.endsWith('.gif')
+        || doc.fileName.endsWith('.svg')
+        || doc.fileName.endsWith('.bmp')
+        || doc.fileName.endsWith('.tiff'))
+      if (documentImages.length > 0) {
+        await db.update(documentsTable).set({isCover: 1}).where(eq(documentsTable.id, documentImages[0].id))
+      }
       const res: GenericResponseInterface = {
         success: true,
         message: `Create paper work: ${body.name} successfully!`,
