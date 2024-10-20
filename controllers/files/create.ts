@@ -7,7 +7,6 @@
 
 import { Elysia, t } from 'elysia'
 import { userInfo } from '../../middlewares/userInfo'
-import { createInsertSchema } from "drizzle-typebox"
 import { categoriesTable, filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';

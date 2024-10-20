@@ -45,25 +45,27 @@ export const getById = (app: Elysia) =>
           id: documentsTable.id,
           fileName: documentsTable.fileName,
           fileSize: documentsTable.fileSize,
+          isCover: documentsTable.isCover
         }).from(documentsTable).where(
           and(
             eq(documentsTable.paperworkId, paperworkId),
             eq(documentsTable.isDeleted, 0)
           )
         )
-        const documentImages = ppwDocuments.filter((doc) => 
-          doc.fileName.endsWith('.jpg') 
-        || doc.fileName.endsWith('.png') 
-        || doc.fileName.endsWith('.jpeg') 
-        || doc.fileName.endsWith('.gif') 
-        || doc.fileName.endsWith('.svg') 
-        || doc.fileName.endsWith('.bmp') 
+        const documentImages = ppwDocuments.filter((doc) =>
+          doc.fileName.endsWith('.jpg')
+        || doc.fileName.endsWith('.png')
+        || doc.fileName.endsWith('.jpeg')
+        || doc.fileName.endsWith('.gif')
+        || doc.fileName.endsWith('.svg')
+        || doc.fileName.endsWith('.bmp')
         || doc.fileName.endsWith('.tiff'))
         const documentImagesWithBlobs: {
           id: string
           fileName: string
           fileSize: number
           fileBlob: any | null
+          isCover: boolean | null,
         }[] = []
         // get more fileBlob for documentImages
         await Promise.all(
@@ -78,12 +80,13 @@ export const getById = (app: Elysia) =>
               documentImagesWithBlobs.push({
                 ...doc,
                 fileBlob: fileBlobDoc[0].fileBlob,
+                isCover: doc.isCover === 1 ? true : doc.isCover === 0 ? false : null,
               })
             }
           })
         )
         const documentAttachments = ppwDocuments.filter((doc) => !documentImages.includes(doc))
-        
+
         const ppwDetails: PaperworkDetails = {
           ...pw[0],
           categories: categories,
