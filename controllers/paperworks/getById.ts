@@ -1,15 +1,15 @@
 import { Elysia, t } from 'elysia';
-import {categoriesTable, documentsTable, paperworksCategoriesTable, paperworksTable, type SelectCategory, type SelectPaperworkWithCategory} from '../../drizzle/schema.ts'
-import { db } from '../../drizzle/index.ts'
+import {categoriesTable, documentsTable, paperworksCategoriesTable, paperworksTable, type SelectCategory } from '../../drizzle/schema.ts'
+import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface.ts';
-import {eq, and, count } from "drizzle-orm"
+import {eq, and } from "drizzle-orm"
 import {userInfo} from "../../middlewares/userInfo.ts";
 import type { PaperworkDetails } from '../../models/PaperworkDetails.ts';
 
 export const getById = (app: Elysia) =>
   app
       .use(userInfo)
-      .get('/get/:paperworkId', async ({ userInfo, query, params: {paperworkId}, set }) => {
+      .get('/get/:paperworkId', async ({ params: {paperworkId}, set }) => {
         const pw = await db.select().from(paperworksTable).where(
           and(
             eq(paperworksTable.id, paperworkId),
@@ -53,13 +53,14 @@ export const getById = (app: Elysia) =>
           )
         )
         const documentImages = ppwDocuments.filter((doc) =>
-          doc.fileName.endsWith('.jpg')
-        || doc.fileName.endsWith('.png')
-        || doc.fileName.endsWith('.jpeg')
-        || doc.fileName.endsWith('.gif')
-        || doc.fileName.endsWith('.svg')
-        || doc.fileName.endsWith('.bmp')
-        || doc.fileName.endsWith('.tiff'))
+          doc.fileName.toLowerCase().endsWith('.jpg')
+        || doc.fileName.toLowerCase().endsWith('.png')
+        || doc.fileName.toLowerCase().endsWith('.jpeg')
+        || doc.fileName.toLowerCase().endsWith('.gif')
+        || doc.fileName.toLowerCase().endsWith('.svg')
+        || doc.fileName.toLowerCase().endsWith('.bmp')
+        || doc.fileName.toLowerCase().endsWith('.heic')
+        || doc.fileName.toLowerCase().endsWith('.tiff'))
         const documentImagesWithBlobs: {
           id: string
           fileName: string
@@ -67,6 +68,7 @@ export const getById = (app: Elysia) =>
           fileBlob: any | null
           isCover: boolean | null,
         }[] = []
+        const documentAttachments = ppwDocuments.filter((doc) => !documentImages.includes(doc))
         // get more fileBlob for documentImages
         await Promise.all(
           documentImages.map(async (doc) => {
@@ -85,7 +87,6 @@ export const getById = (app: Elysia) =>
             }
           })
         )
-        const documentAttachments = ppwDocuments.filter((doc) => !documentImages.includes(doc))
 
         const ppwDetails: PaperworkDetails = {
           ...pw[0],
