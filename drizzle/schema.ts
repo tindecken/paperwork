@@ -118,6 +118,7 @@ export const documentsTable = sqliteTable('documents', {
   fileName: text('fileName').notNull(),
   fileSize: real('fileSize').notNull(),
   fileBlob: blob('fileBlob', {mode: 'buffer'}).notNull(),
+  coverBlob: blob('coverBlob', {mode: 'buffer'}),
   createdAt: text('createdAt')
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
@@ -190,6 +191,6 @@ export type InsertDocument = typeof documentsTable.$inferInsert;
 export type InsertLog = typeof logsTable.$inferInsert;
 
 export type SelectPaperwork = typeof paperworksTable.$inferSelect;
-export type SelectPaperworkWithCategory = SelectPaperwork & { categoryName: string, categoryId: string, categoryDescription: string, coverBlob?: any | null, coverFileName?: string | null, coverFileSize?: number | null, documentCount: number | null };
+export type SelectPaperworkWithCategory = SelectPaperwork & { categoryName: string, categoryId: string, categoryDescription: string, coverBlob?: any | null, coverFileName?: string | null, documentCount: number | null };
 
 export type InsertTheme = typeof themesTable.$inferInsert;

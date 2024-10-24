@@ -6,6 +6,7 @@ import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
 import { ulid } from 'ulid'
+const sharp = require('sharp')
 
 export const createPaperWork = (app: Elysia) =>
   app
@@ -67,9 +68,13 @@ export const createPaperWork = (app: Elysia) =>
               paperworkId: insertedPaperWork[0].id,
               fileSize: file.size,
               fileName: file.name,
-              fileBlob: blobData,
+              fileBlob: Buffer.from(blobData),
               createdBy: userInfo.userName,
             }
+            await tx
+              .insert(documentsTable)
+              .values(document)
+              .returning()
             await tx
               .insert(documentsTable)
               .values(document)
@@ -88,7 +93,9 @@ export const createPaperWork = (app: Elysia) =>
         || doc.fileName.endsWith('.bmp')
         || doc.fileName.endsWith('.tiff'))
       if (documentImages.length > 0) {
-        await db.update(documentsTable).set({isCover: 1}).where(eq(documentsTable.id, documentImages[0].id))
+        sharp(documentImages[0].fileBlob).resize(200, 200).toBuffer().then(async (buffer: Buffer) => {
+          await db.update(documentsTable).set({isCover: 1, coverBlob: buffer}).where(eq(documentsTable.id, documentImages[0].id))
+        })
       }
       const res: GenericResponseInterface = {
         success: true,
@@ -107,3 +114,4 @@ export const createPaperWork = (app: Elysia) =>
         priceCurrency: t.Optional(t.String()),
       })
     })
+
