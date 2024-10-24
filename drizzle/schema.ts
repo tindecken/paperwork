@@ -117,7 +117,7 @@ export const documentsTable = sqliteTable('documents', {
     .references(() => paperworksTable.id, { onDelete: 'cascade' }),
   fileName: text('fileName').notNull(),
   fileSize: real('fileSize').notNull(),
-  fileBlob: blob('fileBlob').notNull(),
+  fileBlob: blob('fileBlob', {mode: 'buffer'}).notNull(),
   createdAt: text('createdAt')
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
