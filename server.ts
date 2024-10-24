@@ -19,26 +19,7 @@ const tls = (process.env.NODE_ENV === 'production') ? {
 }: {}
 const encoder = new TextEncoder()
 new Elysia()
-    .mapResponse(({ response, set }) => {
-      const isJson = typeof response === 'object'
-
-      const text = isJson
-        ? JSON.stringify(response)
-        : response?.toString() ?? ''
-
-      set.headers['Content-Encoding'] = 'gzip'
-
-      return new Response(
-        Bun.gzipSync(encoder.encode(text)),
-        {
-          headers: {
-            'Content-Type': `${
-              isJson ? 'application/json' : 'text/plain'
-            }; charset=utf-8`
-          }
-        }
-      )
-    })
+    
     .use(swagger())
     .group('/test', (app) => 
         app.get('/env', async () => {
@@ -58,10 +39,32 @@ new Elysia()
         .use(paperworksController)
         .use(categoriesController)
         .use(themesController)
-        .onError(async ({ code, error, request }: { code: any, error: any, request: Request }) => {
+        // .mapResponse(({ response, set  }) => {
+        //     console.log('response', response)
+        //     const isJson = typeof response === 'object'
+      
+        //     const text = isJson
+        //       ? JSON.stringify(response)
+        //       : response?.toString() ?? ''
+      
+        //     set.headers['Content-Encoding'] = 'gzip'
+      
+        //     return new Response(
+        //       Bun.gzipSync(encoder.encode(text)),
+        //       {
+        //         headers: {
+        //           'Content-Type': `${
+        //             isJson ? 'application/json' : 'text/plain'
+        //           }; charset=utf-8`
+        //         }
+        //       }
+        //     )
+        // })
+        .onError(async ({ code, error, request, set }: { code: any, error: any, request: Request, set: any }) => {
+            console.log('error', error)
             const logRecord: InsertLog = {
                 id: ulid(),
-                message: error.message || error.response,
+                message: `Code: ${code} - ${error.message || error.response}`,
                 request: JSON.stringify(request),
             }
             await log(logRecord)
@@ -83,6 +86,7 @@ new Elysia()
                     return res
             }
         })
+        
     )
     .listen({
         port: listenPort,

@@ -24,7 +24,7 @@ export const auth = (app: Elysia) => app
             }
             const isPasswordValid = await Bun.password.verify(body.password, user[0].password)
             if (!isPasswordValid) {
-                set.status = 402
+                set.status = 1
                 throw new Error('Invalid credentials')
             }
             // Get selectedFiles

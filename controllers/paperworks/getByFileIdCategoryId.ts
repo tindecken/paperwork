@@ -9,6 +9,7 @@ export const getByFileid = (app: Elysia) =>
   app
       .use(userInfo)
       .get('/getPaperworks', async ({ userInfo, query }) => {
+        console.log('query', query)
         const categories = await db.select().from(categoriesTable).where(
             and(
               eq(categoriesTable.fileId, userInfo.selectedFileId!),
@@ -80,7 +81,7 @@ export const getByFileid = (app: Elysia) =>
             )
             // update ppws with cover
             if (documentsWithCover.length > 0) {
-              ppw.coverBlob = documentsWithCover[0].coverBlob
+              ppw.coverBlob = documentsWithCover[0].fileBlob
               ppw.coverFileName = documentsWithCover[0].fileName
             }
         })
