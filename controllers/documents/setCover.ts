@@ -6,6 +6,7 @@ import { db } from "../../drizzle";
 import {and, eq, sql} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
+import sharp from "sharp";
 export const setCover = (app: Elysia) =>
   app.use(userInfo)
 .post(
@@ -40,13 +41,16 @@ export const setCover = (app: Elysia) =>
         return res
       }
       // update isCover = 0 for all documents
-      await db.update(documentsTable).set({ isCover: 0}).where(eq(documentsTable.paperworkId, body.paperworkId))
-      await db.update(documentsTable).set({ isCover: 1}).where(
-        and(
-          eq(documentsTable.paperworkId, body.paperworkId),
-          eq(documentsTable.id, body.documentId)
+      await db.update(documentsTable).set({ isCover: 0, coverBlob: null}).where(eq(documentsTable.paperworkId, body.paperworkId))
+
+      sharp(documentPaperwork[0].fileBlob).resize(200, 200).toBuffer().then(async (buffer: Buffer) => {
+        await db.update(documentsTable).set({isCover: 1, coverBlob: buffer}).where(
+          and(
+            eq(documentsTable.paperworkId, body.paperworkId),
+            eq(documentsTable.id, body.documentId)
+          )
         )
-      )
+      })
       // update paperwork updatedAt and updatedBy
       await db.update(paperworksTable).set({
         updatedAt: sql`(CURRENT_TIMESTAMP)`,
