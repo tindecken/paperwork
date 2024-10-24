@@ -6,7 +6,7 @@ import {isAdmin} from "../../libs/isAdmin.ts";
 import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
 import { ulid } from 'ulid'
-const sharp = require('sharp')
+import sharp from 'sharp'
 
 export const createPaperWork = (app: Elysia) =>
   app
@@ -74,11 +74,7 @@ export const createPaperWork = (app: Elysia) =>
             await tx
               .insert(documentsTable)
               .values(document)
-              .returning()
-            await tx
-              .insert(documentsTable)
-              .values(document)
-              .returning()            
+              .returning()        
           }
         }
       })
