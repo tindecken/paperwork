@@ -46,7 +46,7 @@ export const addDocuments = (app: Elysia) =>
           paperworkId: body.paperWorkId,
           fileSize: file.size,
           fileName: file.name,
-          fileBlob: blobData,
+          fileBlob: Buffer.from(blobData),
           createdBy: userInfo.userName,
         };
         await db.insert(documentsTable).values(newDocument);
@@ -89,7 +89,7 @@ export const addDocuments = (app: Elysia) =>
         paperworkId: body.paperworkId,
         fileSize: body.file.size,
         fileName: body.file.name,
-        fileBlob: blobData,
+        fileBlob: Buffer.from(blobData),
         createdBy: userInfo.userName,
       };
       await db.insert(documentsTable).values(newDocument);
