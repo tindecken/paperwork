@@ -72,16 +72,17 @@ export const getById = (app: Elysia) =>
         // get more fileBlob for documentImages
         await Promise.all(
           documentImages.map(async (doc) => {
-            const fileBlobDoc = await db.select({ fileBlob: documentsTable.fileBlob}).from(documentsTable).where(
+            // get reducedBlob instead of original fileBlob
+            const reducedFileBlobDoc = await db.select({ fileBlob: documentsTable.reducedBlob}).from(documentsTable).where(
               and(
                 eq(documentsTable.id, doc.id),
                 eq(documentsTable.isDeleted, 0)
               )
             )
-            if (fileBlobDoc.length > 0) {
+            if (reducedFileBlobDoc.length > 0) {
               documentImagesWithBlobs.push({
                 ...doc,
-                fileBlob: fileBlobDoc[0].fileBlob,
+                fileBlob: reducedFileBlobDoc[0].fileBlob,
                 isCover: doc.isCover === 1 ? true : doc.isCover === 0 ? false : null,
               })
             }
