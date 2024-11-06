@@ -119,6 +119,8 @@ export const documentsTable = sqliteTable('documents', {
   fileSize: real('fileSize').notNull(),
   fileBlob: blob('fileBlob', {mode: 'buffer'}).notNull(),
   coverBlob: blob('coverBlob', {mode: 'buffer'}),
+  reducedBlob: blob('reducedBlob', {mode: 'buffer'}),
+  reducedSize: real('reducedSize'),
   createdAt: text('createdAt')
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
@@ -126,7 +128,7 @@ export const documentsTable = sqliteTable('documents', {
   updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
   isCover: integer('isCover').notNull().default(0),
-  isDeleted: integer('isDeleted').notNull().default(0),
+  isDeleted: integer('isDeleted').notNull().default(0)
 });
 
 export const logsTable = sqliteTable('logs', {

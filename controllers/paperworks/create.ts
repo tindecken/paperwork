@@ -92,6 +92,16 @@ export const createPaperWork = (app: Elysia) =>
         sharp(documentImages[0].fileBlob).resize(200, 200).toBuffer().then(async (buffer: Buffer) => {
           await db.update(documentsTable).set({isCover: 1, coverBlob: buffer}).where(eq(documentsTable.id, documentImages[0].id))
         })
+        // reduce size of all images
+        sharp(documentImages[0].fileBlob)
+          .jpeg({ quality: 50 })
+          .png({
+            compressionLevel: 8, quality: 80
+          })
+          .toBuffer()
+          .then(async (buffer: Buffer) => {
+            await db.update(documentsTable).set({reducedBlob: buffer}).where(eq(documentsTable.id, documentImages[0].id))
+          });
       }
       const res: GenericResponseInterface = {
         success: true,
