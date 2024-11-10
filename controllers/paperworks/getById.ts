@@ -70,6 +70,9 @@ export const getById = (app: Elysia) =>
         }[] = []
         const documentAttachments = ppwDocuments.filter((doc) => !documentImages.includes(doc))
         // get more fileBlob for documentImages
+        // ... previous code remains the same
+
+        // get more fileBlob for documentImages
         await Promise.all(
           documentImages.map(async (doc) => {
             // get reducedBlob instead of original fileBlob
@@ -80,11 +83,10 @@ export const getById = (app: Elysia) =>
               )
             )
             if (reducedFileBlobDoc.length > 0) {
-              console.log('reducedBlob', reducedFileBlobDoc[0].reducedBlob)
-              console.log('reducedSize', reducedFileBlobDoc[0].reducedSize)
               documentImagesWithBlobs.push({
                 ...doc,
                 fileBlob: reducedFileBlobDoc[0].reducedBlob,
+                fileSize: reducedFileBlobDoc[0].reducedSize !== null ? reducedFileBlobDoc[0].reducedSize : 0, // Add a check for null
                 isCover: doc.isCover === 1 ? true : doc.isCover === 0 ? false : null,
               })
             } else { // get fileBlob for documentImages
@@ -96,7 +98,7 @@ export const getById = (app: Elysia) =>
               )
               if (fileBlobDoc.length > 0) {
                 documentImagesWithBlobs.push({
-                 ...doc,
+                  ...doc,
                   fileBlob: fileBlobDoc[0].fileBlob,
                   isCover: doc.isCover === 1? true : doc.isCover === 0? false : null,
                 })
@@ -104,6 +106,8 @@ export const getById = (app: Elysia) =>
             }
           })
         )
+
+        // ... the rest of the component
         const ppwDetails: PaperworkDetails = {
           ...pw[0],
           categories: categories,
