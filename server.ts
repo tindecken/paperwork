@@ -40,7 +40,6 @@ new Elysia()
         .use(categoriesController)
         .use(themesController)
         .mapResponse(({ response, set  }) => {
-            console.log('response', response)
             const isJson = typeof response === 'object'
       
             const text = isJson

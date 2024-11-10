@@ -73,22 +73,37 @@ export const getById = (app: Elysia) =>
         await Promise.all(
           documentImages.map(async (doc) => {
             // get reducedBlob instead of original fileBlob
-            const reducedFileBlobDoc = await db.select({ fileBlob: documentsTable.reducedBlob}).from(documentsTable).where(
+            const reducedFileBlobDoc = await db.select({ reducedBlob: documentsTable.reducedBlob, reducedSize: documentsTable.reducedSize}).from(documentsTable).where(
               and(
                 eq(documentsTable.id, doc.id),
                 eq(documentsTable.isDeleted, 0)
               )
             )
             if (reducedFileBlobDoc.length > 0) {
+              console.log('reducedBlob', reducedFileBlobDoc[0].reducedBlob)
+              console.log('reducedSize', reducedFileBlobDoc[0].reducedSize)
               documentImagesWithBlobs.push({
                 ...doc,
-                fileBlob: reducedFileBlobDoc[0].fileBlob,
+                fileBlob: reducedFileBlobDoc[0].reducedBlob,
                 isCover: doc.isCover === 1 ? true : doc.isCover === 0 ? false : null,
               })
+            } else { // get fileBlob for documentImages
+              const fileBlobDoc = await db.select({ fileBlob: documentsTable.fileBlob}).from(documentsTable).where(
+                and(
+                  eq(documentsTable.id, doc.id),
+                  eq(documentsTable.isDeleted, 0)
+                )
+              )
+              if (fileBlobDoc.length > 0) {
+                documentImagesWithBlobs.push({
+                 ...doc,
+                  fileBlob: fileBlobDoc[0].fileBlob,
+                  isCover: doc.isCover === 1? true : doc.isCover === 0? false : null,
+                })
+              }
             }
           })
         )
-
         const ppwDetails: PaperworkDetails = {
           ...pw[0],
           categories: categories,

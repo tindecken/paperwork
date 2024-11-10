@@ -78,27 +78,29 @@ export const createPaperWork = (app: Elysia) =>
           }
         }
       })
-      // Set cover for the paperwork
+      // Set cover for the paperwork and reduce size of images
       const documents = await db.select().from(documentsTable).where(eq(documentsTable.paperworkId, ppwULID))
       const documentImages = documents.filter((doc) =>
-        doc.fileName.endsWith('.jpg')
-        || doc.fileName.endsWith('.png')
-        || doc.fileName.endsWith('.jpeg')
-        || doc.fileName.endsWith('.gif')
-        || doc.fileName.endsWith('.svg')
-        || doc.fileName.endsWith('.bmp')
-        || doc.fileName.endsWith('.tiff'))
+        doc.fileName.toLowerCase().endsWith('.jpg')
+        || doc.fileName.toLowerCase().endsWith('.png')
+        || doc.fileName.toLowerCase().endsWith('.jpeg')
+        || doc.fileName.toLowerCase().endsWith('.gif')
+        || doc.fileName.toLowerCase().endsWith('.svg')
+        || doc.fileName.toLowerCase().endsWith('.bmp')
+        || doc.fileName.toLowerCase().endsWith('.tiff'))
       if (documentImages.length > 0) {
-        sharp(documentImages[0].fileBlob).resize(200, 200).toBuffer().then(async (buffer: Buffer) => {
+        sharp(documentImages[0].fileBlob).resize(200, 200).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (buffer: Buffer) => {
           await db.update(documentsTable).set({isCover: 1, coverBlob: buffer}).where(eq(documentsTable.id, documentImages[0].id))
         })
-        // reduce size of all images
-        sharp(documentImages[0].fileBlob)
-          .jpeg({ mozjpeg: true, quality: 50 })
-          .toBuffer()
-          .then(async (buffer: Buffer) => {
-            await db.update(documentsTable).set({reducedBlob: buffer, reducedSize: buffer.byteLength}).where(eq(documentsTable.id, documentImages[0].id))
-          });
+      }
+      // reduce size of all images
+      for (const image of documentImages) {
+        sharp(image.fileBlob)
+        .jpeg({ mozjpeg: true, quality: 50 })
+        .toBuffer()
+        .then(async (buffer: Buffer) => {
+          await db.update(documentsTable).set({reducedBlob: buffer, reducedSize: buffer.byteLength}).where(eq(documentsTable.id, image.id))
+        });
       }
       const res: GenericResponseInterface = {
         success: true,
