@@ -7,6 +7,7 @@ import {eq, sql} from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 import { isAdmin } from "../../libs/isAdmin";
 import { ulid } from "ulid";
+import sharp from 'sharp'
 export const addDocuments = (app: Elysia) =>
   app.use(userInfo)
   .post(
@@ -81,18 +82,37 @@ export const addDocuments = (app: Elysia) =>
       );
     }
     const fileArrayBuffer = await body.file.arrayBuffer();
-      if (fileArrayBuffer.byteLength === 0)
-        throw new Error(`File ${body.file.name} is empty!`);
-      const blobData = new Uint8Array(fileArrayBuffer);
-      const newDocument: InsertDocument = {
-        id: ulid(),
-        paperworkId: body.paperworkId,
-        fileSize: body.file.size,
-        fileName: body.file.name,
-        fileBlob: Buffer.from(blobData),
-        createdBy: userInfo.userName,
-      };
-      await db.insert(documentsTable).values(newDocument);
+    if (fileArrayBuffer.byteLength === 0)
+      throw new Error(`File ${body.file.name} is empty!`);
+    const blobData = new Uint8Array(fileArrayBuffer);
+    const newDocument: InsertDocument = {
+      id: ulid(),
+      paperworkId: body.paperworkId,
+      fileSize: body.file.size,
+      fileName: body.file.name,
+      fileBlob: Buffer.from(blobData),
+      createdBy: userInfo.userName,
+    };
+    await db.insert(documentsTable).values(newDocument);
+    // Set cover for the paperwork and reduce size of images
+    const documents = await db.select().from(documentsTable).where(eq(documentsTable.paperworkId, body.paperworkId))
+    const documentImages = documents.filter((doc) =>
+      doc.fileName.toLowerCase().endsWith('.jpg')
+      || doc.fileName.toLowerCase().endsWith('.png')
+      || doc.fileName.toLowerCase().endsWith('.jpeg')
+      || doc.fileName.toLowerCase().endsWith('.gif')
+      || doc.fileName.toLowerCase().endsWith('.svg')
+      || doc.fileName.toLowerCase().endsWith('.bmp')
+      || doc.fileName.toLowerCase().endsWith('.tiff'))
+    // reduce size of all images
+    for (const image of documentImages) {
+      await sharp(image.fileBlob)
+      .jpeg({ mozjpeg: true, quality: 50 })
+      .toBuffer()
+      .then(async (buffer: Buffer) => {
+        await db.update(documentsTable).set({reducedBlob: buffer, reducedSize: buffer.byteLength}).where(eq(documentsTable.id, image.id))
+      });
+    }
     // update paperwork updatedAt and updatedBy
     await db.update(paperworksTable).set({
       updatedAt: sql`(CURRENT_TIMESTAMP)`,

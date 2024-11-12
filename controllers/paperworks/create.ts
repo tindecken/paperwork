@@ -89,7 +89,7 @@ export const createPaperWork = (app: Elysia) =>
         || doc.fileName.toLowerCase().endsWith('.bmp')
         || doc.fileName.toLowerCase().endsWith('.tiff'))
       if (documentImages.length > 0) {
-        sharp(documentImages[0].fileBlob).resize(200, 200).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (buffer: Buffer) => {
+        await sharp(documentImages[0].fileBlob).resize(200, 200).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (buffer: Buffer) => {
           await db.update(documentsTable).set({isCover: 1, coverBlob: buffer}).where(eq(documentsTable.id, documentImages[0].id))
         })
       }
