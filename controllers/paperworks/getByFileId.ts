@@ -15,36 +15,43 @@ export const getByFileid = (app: Elysia) =>
               eq(categoriesTable.isDeleted, 0)
             )
         )
-        let ppws: SelectPaperworkWithCategory[] = []
+        const paperworkMap = new Map<string, SelectPaperworkWithCategory>();
         await Promise.all(
             categories.map(async (cat) => {
-                const paperworks = await db.select().from(paperworksTable).innerJoin(paperworksCategoriesTable, eq(paperworksTable.id, paperworksCategoriesTable.paperworkId)).where(
+                const paperworks = await db.select().from(paperworksTable).leftJoin(paperworksCategoriesTable, eq(paperworksTable.id, paperworksCategoriesTable.paperworkId)).where(
                     and(
                         eq(paperworksCategoriesTable.categoryId, cat.id),
                         eq(paperworksCategoriesTable.isDeleted, 0)
                     )
                 )
-                paperworks.forEach((p) => ppws.push({
-                   ...p.paperworks,
-                   categoryName: cat.name,
-                   categoryDescription: cat.description ?? '',
-                   categoryId: cat.id,
-                   coverBlob: null,
-                   coverFileName: null,
-                   documentCount: null
-                }))
+                paperworks.forEach((p) => {
+                  const paperworkId = p.paperworks.id;
+                  if (!paperworkMap.has(paperworkId)) {
+                    paperworkMap.set(paperworkId, {
+                        ...p.paperworks,
+                        coverBlob: null,
+                        coverFileName: null,
+                        documentCount: null,
+                        categories: [cat.name] // Initialize with the current category ID
+                    });
+                } else {
+                    // If already exists, just add the category ID to the list
+                    const existingPaperwork = paperworkMap.get(paperworkId)!;
+                    existingPaperwork.categories.push(cat.name);
+                }
+              })
             })
         )
+        let ppws = Array.from(paperworkMap.values());
         // filter
         if (query.filterValue) {
           ppws = ppws.filter((p) => p.name.toLowerCase().includes(query.filterValue!.toLowerCase()) 
           || (p.description && p.description.toLowerCase().includes(query.filterValue!.toLowerCase())) 
-          || (p.categoryName.toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.categoryDescription && p.categoryDescription.toLowerCase().includes(query.filterValue!.toLowerCase()))
           || (p.price && p.price.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
           || (p.priceCurrency && p.priceCurrency.toLowerCase().includes(query.filterValue!.toLowerCase()))
           || (p.issuedAt && p.issuedAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase())))
+          || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.categories.some((c) => c.toLowerCase().includes(query.filterValue!.toLowerCase()))));
         }
         const totalCount = ppws.length;
         // sort
