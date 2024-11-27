@@ -24,14 +24,15 @@ export const documents = sqliteTable("documents", {
 	fileName: text("fileName").notNull(),
 	fileSize: real("fileSize").notNull(),
 	fileBlob: blob("fileBlob").notNull(),
+	coverBlob: blob("coverBlob"),
+	reducedBlob: blob("reducedBlob"),
+	reducedSize: real("reducedSize"),
 	createdAt: text("createdAt").default("sql`(CURRENT_TIMESTAMP)`").notNull(),
 	createdBy: text("createdBy"),
 	updatedAt: text("updatedAt"),
 	updatedBy: text("updatedBy"),
 	isCover: integer("isCover").default(0).notNull(),
 	isDeleted: integer("isDeleted").default(0).notNull(),
-	coverBlob: blob("coverBlob"),
-	reducedBlob: blob("reducedBlob"),
 });
 
 export const files = sqliteTable("files", {

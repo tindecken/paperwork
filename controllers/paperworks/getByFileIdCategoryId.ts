@@ -5,11 +5,10 @@ import type { GenericResponseInterface } from '../../models/GenericResponseInter
 import {eq, and, count } from "drizzle-orm"
 import {userInfo} from "../../middlewares/userInfo.ts";
 
-export const getByFileid = (app: Elysia) =>
+export const getByCategoryId = (app: Elysia) =>
   app
       .use(userInfo)
       .get('/getPaperworks', async ({ userInfo, query }) => {
-        console.log('query', query)
         const categories = await db.select().from(categoriesTable).where(
             and(
               eq(categoriesTable.fileId, userInfo.selectedFileId!),
@@ -81,7 +80,7 @@ export const getByFileid = (app: Elysia) =>
             )
             // update ppws with cover
             if (documentsWithCover.length > 0) {
-              ppw.coverBlob = documentsWithCover[0].fileBlob
+              ppw.coverBlob = documentsWithCover[0].coverBlob
               ppw.coverFileName = documentsWithCover[0].fileName
             }
         })

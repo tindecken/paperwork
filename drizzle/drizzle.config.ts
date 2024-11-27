@@ -6,7 +6,7 @@ export default defineConfig({
   dialect: 'sqlite',
   driver: 'turso',
   dbCredentials: {
-    url: 'file:mypaperwork.db',
+    url: process.env['TURSO_CONNECTION_URL']!,
     authToken: process.env['TURSO_AUTH_TOKEN']!,
   },
 });
