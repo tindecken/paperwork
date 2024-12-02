@@ -4,6 +4,7 @@ import { updatePaperWork } from './update'
 import { deletePaperWork } from './delete'
 import { getByFileid } from './getByFileId'
 import { getById } from './getById'
+import { getByCategoryId } from './getByFileIdCategoryId'
 
 // Notes: deleteFile not imported for safety reasons
 
@@ -13,3 +14,4 @@ export const paperworksController = new Elysia({ prefix: '/paperworks'})
   .use(deletePaperWork)
   .use(getByFileid)
   .use(getById)
+  .use(getByCategoryId)

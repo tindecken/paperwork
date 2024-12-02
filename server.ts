@@ -39,15 +39,14 @@ new Elysia()
         .use(paperworksController)
         .use(categoriesController)
         .use(themesController)
-        .mapResponse(({ response, set  }) => {
+        .onAfterHandle(({ response, set  }) => {
             const isJson = typeof response === 'object'
-      
             const text = isJson
               ? JSON.stringify(response)
-              : response?.toString() ?? ''
-      
+              : response ?? ''
+
             set.headers['Content-Encoding'] = 'gzip'
-      
+
             return new Response(
               Bun.gzipSync(encoder.encode(text)),
               {
@@ -59,6 +58,7 @@ new Elysia()
               }
             )
         })
+
         .onError(async ({ code, error, request }: { code: any, error: any, request: Request, set: any }) => {
             console.log('error', error)
             const logRecord: InsertLog = {

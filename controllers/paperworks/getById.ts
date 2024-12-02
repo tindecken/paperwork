@@ -127,5 +127,8 @@ export const getById = (app: Elysia) =>
           sortField: t.Optional(t.String()),
           sortDirection: t.Optional(t.TemplateLiteral('${asc|desc}')),
           filterValue: t.Optional(t.String()),
-        })
+        }),
+        params: t.Object({
+          paperworkId: t.String(),
+        }),
       });

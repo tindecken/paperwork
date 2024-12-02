@@ -8,43 +8,50 @@ import {userInfo} from "../../middlewares/userInfo.ts";
 export const getByCategoryId = (app: Elysia) =>
   app
       .use(userInfo)
-      .get('/getPaperworks', async ({ userInfo, query }) => {
-        const categories = await db.select().from(categoriesTable).where(
-            and(
-              eq(categoriesTable.fileId, userInfo.selectedFileId!),
-              eq(categoriesTable.isDeleted, 0)
-            )
+      .get('/getPaperworks/:categoryId', async ({ params: {categoryId}, userInfo, query }) => {
+        const category = await db.select().from(categoriesTable).where(
+          and(
+            eq(categoriesTable.fileId, userInfo.selectedFileId!),
+            eq(categoriesTable.id, categoryId),
+            eq(categoriesTable.isDeleted, 0)
+          )
         )
-        let ppws: SelectPaperworkWithCategory[] = []
-        await Promise.all(
-            categories.map(async (cat) => {
-                const paperworks = await db.select().from(paperworksTable).innerJoin(paperworksCategoriesTable, eq(paperworksTable.id, paperworksCategoriesTable.paperworkId)).where(
-                    and(
-                        eq(paperworksCategoriesTable.categoryId, cat.id),
-                        eq(paperworksCategoriesTable.isDeleted, 0)
-                    )
-                )
-                paperworks.forEach((p) => ppws.push({
-                   ...p.paperworks,
-                   categoryName: cat.name,
-                   categoryDescription: cat.description ?? '',
-                   categoryId: cat.id,
-                   coverBlob: null,
-                   coverFileName: null,
-                   documentCount: null
-                }))
-            })
+        if (!category.length) {
+          return { success: false, message: 'Category not found', data: null };
+        }
+        const paperworkMap = new Map<string, SelectPaperworkWithCategory>();
+        const paperworks = await db.select().from(paperworksTable).leftJoin(paperworksCategoriesTable, eq(paperworksTable.id, paperworksCategoriesTable.paperworkId)).where(
+          and(
+              eq(paperworksCategoriesTable.categoryId, categoryId),
+              eq(paperworksCategoriesTable.isDeleted, 0)
+          )
         )
+        paperworks.forEach((p) => {
+          const paperworkId = p.paperworks.id;
+          if (!paperworkMap.has(paperworkId)) {
+            paperworkMap.set(paperworkId, {
+                ...p.paperworks,
+                coverBlob: null,
+                coverFileName: null,
+                documentCount: null,
+                categories: [category[0].name]
+            });
+          } else {
+              // If already exists, just add the category ID to the list
+              const existingPaperwork = paperworkMap.get(paperworkId)!;
+              existingPaperwork.categories.push(category[0].name);
+          }
+        })
+        let ppws = Array.from(paperworkMap.values());
         // filter
         if (query.filterValue) {
           ppws = ppws.filter((p) => p.name.toLowerCase().includes(query.filterValue!.toLowerCase()) 
           || (p.description && p.description.toLowerCase().includes(query.filterValue!.toLowerCase())) 
-          || (p.categoryName.toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.categoryDescription && p.categoryDescription.toLowerCase().includes(query.filterValue!.toLowerCase()))
           || (p.price && p.price.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
           || (p.priceCurrency && p.priceCurrency.toLowerCase().includes(query.filterValue!.toLowerCase()))
           || (p.issuedAt && p.issuedAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase())))
+          || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
+          || (p.categories.some((c) => c.toLowerCase().includes(query.filterValue!.toLowerCase()))));
         }
         const totalCount = ppws.length;
         // sort
@@ -111,5 +118,8 @@ export const getByCategoryId = (app: Elysia) =>
           sortField: t.Optional(t.String()),
           sortDirection: t.Optional(t.TemplateLiteral('${asc|desc}')),
           filterValue: t.Optional(t.String()),
+        }),
+        params: t.Object({
+          categoryId: t.String()
         })
       });
