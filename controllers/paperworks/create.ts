@@ -32,8 +32,8 @@ export const createPaperWork = (app: Elysia) =>
       }
       if (body.files) {
         for (const file of body.files) {
-          if (file.size > 1024 * 1024 * 10) {
-            throw new Error(`File ${file.name} with file size ${file.size} is greater than 10MB! Please upload a smaller file.`)
+          if (file.size > 1024 * 1024 * 4) {
+            throw new Error(`File ${file.name} with file size ${file.size} is greater than 4MB! Please upload a smaller file.`)
           }
         }
       }
@@ -93,12 +93,13 @@ export const createPaperWork = (app: Elysia) =>
           await db.update(documentsTable).set({isCover: 1, coverBlob: buffer}).where(eq(documentsTable.id, documentImages[0].id))
         })
       }
-      // reduce size of all images
+      //reduce size of all images
       for (const image of documentImages) {
         sharp(image.fileBlob)
-        .jpeg({ mozjpeg: true, quality: 50 })
+        .jpeg({ quality: 50 })
         .toBuffer()
         .then(async (buffer: Buffer) => {
+          console.log(`Original: ${image.fileSize} bytes, reduced: ${buffer.byteLength} bytes. Reduced: ${Math.round(100 - (buffer.byteLength / image.fileSize * 100))}%`)
           await db.update(documentsTable).set({reducedBlob: buffer, reducedSize: buffer.byteLength}).where(eq(documentsTable.id, image.id))
         });
       }

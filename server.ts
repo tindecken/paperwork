@@ -60,7 +60,6 @@ new Elysia()
         })
 
         .onError(async ({ code, error, request }: { code: any, error: any, request: Request, set: any }) => {
-            console.log('error', error)
             const logRecord: InsertLog = {
                 id: ulid(),
                 message: `Code: ${code} - ${error.message || error.response}`,
