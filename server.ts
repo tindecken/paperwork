@@ -31,7 +31,9 @@ new Elysia()
     )
     .group('/api', (app) =>
         app
-        .use(cors())
+        .use(cors({
+            origin: false
+        }))
         .use(cookie())
         .use(auth)
         .use(documentsController)
