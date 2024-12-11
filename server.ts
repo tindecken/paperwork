@@ -21,6 +21,9 @@ const encoder = new TextEncoder()
 new Elysia()
     
     .use(swagger())
+    .use(cors({
+        origin: false
+    }))
     .group('/test', (app) => 
         app.get('/env', async () => {
             return {
@@ -31,9 +34,6 @@ new Elysia()
     )
     .group('/api', (app) =>
         app
-        .use(cors({
-            origin: false
-        }))
         .use(cookie())
         .use(auth)
         .use(documentsController)
