@@ -22,7 +22,7 @@ new Elysia()
     
     .use(swagger())
     .use(cors({
-        origin: /.*\.paperwork-aje2\.onrender\.com$/
+        origin: '/.*\.paperwork-aje2\.onrender\.com$/'
     }))
     .group('/test', (app) => 
         app.get('/env', async () => {
