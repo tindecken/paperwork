@@ -22,7 +22,7 @@ new Elysia()
     
     .use(swagger())
     .use(cors({
-        origin: false
+        origin: /.*\.mypaperwork\.netlify\.net$/
     }))
     .group('/test', (app) => 
         app.get('/env', async () => {
