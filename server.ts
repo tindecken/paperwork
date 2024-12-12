@@ -22,7 +22,7 @@ new Elysia()
     
     .use(swagger())
     .use(cors({
-        origin: [/.*\.onrender\.com$/, /.*\.netlify\.app$/, /.*\.tindecken\.xyz$/, 'tindecken.xyz']
+        origin: [/.*\.onrender\.com$/, /.*\.netlify\.app$/, /.*\.tindecken\.xyz$/, 'tindecken.xyz', 'localhost']
     }))
     .group('/test', (app) => 
         app.get('/env', async () => {
