@@ -32,7 +32,7 @@ export const createPaperWork = (app: Elysia) =>
       }
       if (body.files) {
         for (const file of body.files) {
-          if (file.size > 1024 * 1024 * 4) {
+          if (file.size > 1024 * 1024 * 20) {
             throw new Error(`File ${file.name} with file size ${file.size} is greater than 4MB! Please upload a smaller file.`)
           }
         }
