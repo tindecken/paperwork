@@ -7,6 +7,7 @@ import {eq} from "drizzle-orm";
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface.ts";
 import { ulid } from 'ulid'
 import sharp from 'sharp'
+import { IMAGE_FILE_TYPE } from '../constants/imageType.ts';
 
 export const createPaperWork = (app: Elysia) =>
   app
@@ -80,14 +81,18 @@ export const createPaperWork = (app: Elysia) =>
       })
       // Set cover for the paperwork and reduce size of images
       const documents = await db.select().from(documentsTable).where(eq(documentsTable.paperworkId, ppwULID))
-      const documentImages = documents.filter((doc) =>
-        doc.fileName.toLowerCase().endsWith('.jpg')
-        || doc.fileName.toLowerCase().endsWith('.png')
-        || doc.fileName.toLowerCase().endsWith('.jpeg')
-        || doc.fileName.toLowerCase().endsWith('.gif')
-        || doc.fileName.toLowerCase().endsWith('.svg')
-        || doc.fileName.toLowerCase().endsWith('.bmp')
-        || doc.fileName.toLowerCase().endsWith('.tiff'))
+      const documentImages = documents.filter((doc) => {
+        const fileExtension = doc.fileName.substring(doc.fileName.lastIndexOf('.') + 1);
+        return IMAGE_FILE_TYPE.includes(fileExtension.toLowerCase())
+      });
+      // const documentImages = documents.filter((doc) =>
+      //   doc.fileName.toLowerCase().endsWith('.jpg')
+      //   || doc.fileName.toLowerCase().endsWith('.png')
+      //   || doc.fileName.toLowerCase().endsWith('.jpeg')
+      //   || doc.fileName.toLowerCase().endsWith('.gif')
+      //   || doc.fileName.toLowerCase().endsWith('.svg')
+      //   || doc.fileName.toLowerCase().endsWith('.bmp')
+      //   || doc.fileName.toLowerCase().endsWith('.tiff'))
       if (documentImages.length > 0) {
         await sharp(documentImages[0].fileBlob).resize(200, 200).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (buffer: Buffer) => {
           await db.update(documentsTable).set({isCover: 1, coverBlob: buffer}).where(eq(documentsTable.id, documentImages[0].id))
