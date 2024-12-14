@@ -8,6 +8,7 @@ import type { GenericResponseInterface } from "../../models/GenericResponseInter
 import { isAdmin } from "../../libs/isAdmin";
 import { ulid } from "ulid";
 import sharp from 'sharp'
+import { IMAGE_FILE_TYPE } from "../constants/imageType";
 export const addDocuments = (app: Elysia) =>
   app.use(userInfo)
   .post(
@@ -96,20 +97,17 @@ export const addDocuments = (app: Elysia) =>
     await db.insert(documentsTable).values(newDocument);
     // Set cover for the paperwork and reduce size of images
     const documents = await db.select().from(documentsTable).where(eq(documentsTable.paperworkId, body.paperworkId))
-    const documentImages = documents.filter((doc) =>
-      doc.fileName.toLowerCase().endsWith('.jpg')
-      || doc.fileName.toLowerCase().endsWith('.png')
-      || doc.fileName.toLowerCase().endsWith('.jpeg')
-      || doc.fileName.toLowerCase().endsWith('.gif')
-      || doc.fileName.toLowerCase().endsWith('.svg')
-      || doc.fileName.toLowerCase().endsWith('.bmp')
-      || doc.fileName.toLowerCase().endsWith('.tiff'))
-    // reduce size of all images
+    const documentImages = documents.filter((doc) => {
+      const fileExtension = doc.fileName.substring(doc.fileName.lastIndexOf('.') + 1);
+      return IMAGE_FILE_TYPE.includes(fileExtension.toLowerCase())
+    });
+    //reduce size of all images
     for (const image of documentImages) {
       await sharp(image.fileBlob)
-      .jpeg({ mozjpeg: true, quality: 50 })
+      .jpeg({ quality: 50 })
       .toBuffer()
       .then(async (buffer: Buffer) => {
+        console.log(`Original: ${image.fileSize} bytes, reduced: ${buffer.byteLength} bytes. Reduced: ${Math.round(100 - (buffer.byteLength / image.fileSize * 100))}%`)
         await db.update(documentsTable).set({reducedBlob: buffer, reducedSize: buffer.byteLength}).where(eq(documentsTable.id, image.id))
       });
     }
