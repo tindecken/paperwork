@@ -47,9 +47,8 @@ export const updatePaperWork = (app: Elysia) => {
       body: t.Object({
         name: t.Optional(t.String()),
         description: t.Optional(t.String()),
-        issueAt: t.Optional(t.String()),
-        // price: t.Optional(t.Union([t.Null(), t.Number()])),
-        price: t.Optional(t.Number()),
+        issueAt: t.Optional(t.Union([t.Null(), t.String()])),
+        price: t.Optional(t.Union([t.Null(), t.Number()])),
         priceCurrency: t.Optional(t.String()),
       }),
       params: t.Object({

@@ -131,4 +131,36 @@ export const auth = (app: Elysia) => app
                 }
             
         })
+        .post('/changepassword', async ({bearer, body}) => {
+            if (!bearer) {
+                throw new Error("Unauthorized")
+            }
+            const user = await db.select().from(usersTable).where(eq(usersTable.id, body.userId))
+            if (user.length === 0) {
+                throw new Error("User not found")
+            }
+            // verify newPassword and confirmNewPassword is the same
+            const isPasswordValid = await Bun.password.verify(body.currentPassword, user[0].password)
+            if (!isPasswordValid) {
+                throw new Error("Invalid current password")
+            }
+            if (body.newPassword!== body.confirmNewPassword) {
+                throw new Error("New password and confirm new password are not the same")
+            }
+            const hashedPassword = await Bun.password.hash(body.newPassword)
+            await db.update(usersTable).set({ password: hashedPassword }).where(eq(usersTable.id, body.userId))
+            const res: GenericResponseInterface = {
+                success: true,
+                message: "Change password success",
+                data: null
+            }
+            return res
+        }, {
+            body: t.Object({
+                userId: t.String(),
+                currentPassword: t.String(),
+                newPassword: t.String(),
+                confirmNewPassword: t.String()
+              }),
+        })
     )
