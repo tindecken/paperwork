@@ -13,11 +13,17 @@ import {ulid} from "ulid";
 export const updateCategoriesByPaperworkId = (app: Elysia) =>
   app
       .use(userInfo)
-      .put('/updateCategories', async ({ userInfo, body }) => {
+      .put('/updateCategories', async ({ userInfo, body, set }) => {
           // check paperworkId exist or not in table paperworks
           const existingPaperwork = await db.select().from(paperworksTable).where(eq(paperworksTable.id, body.paperworkId))
           if (existingPaperwork.length === 0) {
-              throw new Error(`Paperwork with id ${body.paperworkId} does not exist`)
+            set.status = 400
+            const res: GenericResponseInterface = {
+                success: false,
+                message: `Paperwork with id ${body.paperworkId} does not exist!`,
+                data: null
+            }
+            return res
           }
           await db.delete(paperworksCategoriesTable).where(
               eq(paperworksCategoriesTable.paperworkId, body.paperworkId)

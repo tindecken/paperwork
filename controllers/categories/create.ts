@@ -22,6 +22,22 @@ export const createCategory = (app: Elysia) =>
       }
       return res
     }
+    var existingCategoryByFileIdandName = await db.select().from(categoriesTable).where(
+      and(
+        eq(categoriesTable.fileId, body.fileId),
+        eq(categoriesTable.name, body.name),
+        eq(categoriesTable.isDeleted, 0)
+      )
+    )
+    if(existingCategoryByFileIdandName.length > 0) {
+      set.status = 409
+      const res: GenericResponseInterface = {
+        success: false,
+        message: `Category with the same name already exists!`,
+        data: null
+      }
+      return res
+    }
     const newCategory: typeof categoriesTable.$inferInsert = {
       id: ulid(),
       name: body.name,
