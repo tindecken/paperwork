@@ -3,9 +3,9 @@ import {
     type InsertPaperworksCategories,
     paperworksCategoriesTable,
     paperworksTable
-} from '../../drizzle/schema'
-import { db } from '../../drizzle'
-import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
+} from '../../drizzle/schema.ts'
+import { db } from '../../drizzle/index.ts'
+import type { GenericResponseInterface } from '../../models/GenericResponseInterface.ts';
 import {eq, sql} from "drizzle-orm"
 import {userInfo} from "../../middlewares/userInfo.ts";
 import {ulid} from "ulid";
