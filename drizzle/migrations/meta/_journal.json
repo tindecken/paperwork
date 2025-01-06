@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1725978342338,
-      "tag": "0000_awesome_xavin",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1730814607451,
-      "tag": "0001_panoramic_thunderbolts",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1730818548656,
-      "tag": "0002_giant_lyja",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1730818900146,
-      "tag": "0003_brief_omega_sentinel",
+      "when": 1736179270661,
+      "tag": "0000_wise_sentry",
       "breakpoints": true
     }
   ]

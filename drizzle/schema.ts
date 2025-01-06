@@ -117,7 +117,7 @@ export const documentsTable = sqliteTable('documents', {
     .references(() => paperworksTable.id, { onDelete: 'cascade' }),
   fileName: text('fileName').notNull(),
   fileSize: real('fileSize').notNull(),
-  fileBlob: blob('fileBlob', {mode: 'buffer'}).notNull(),
+  fileBlob: blob('fileBlob', {mode: 'buffer'}),
   coverBlob: blob('coverBlob', {mode: 'buffer'}),
   reducedBlob: blob('reducedBlob', {mode: 'buffer'}),
   reducedSize: real('reducedSize'),
@@ -128,6 +128,8 @@ export const documentsTable = sqliteTable('documents', {
   updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text('updatedBy'),
   isCover: integer('isCover').notNull().default(0),
+  filePath: text('filePath'),
+  reducedPath: text('reducedPath'),
   isDeleted: integer('isDeleted').notNull().default(0)
 });
 

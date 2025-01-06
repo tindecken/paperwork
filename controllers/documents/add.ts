@@ -77,7 +77,7 @@ export const addDocuments = (app: Elysia) =>
     if (paperwork.length === 0) {
       throw new Error(`Paper work ${body.paperworkId} not found`)
     }
-    if (body.file.size > 1024 * 1024 * 10) {
+    if (body.file.size > Number(process.env["MAX_FILE_SIZE_IN_MB"]) * 1024 * 1024) {
       throw new Error(
         `File ${body.file.name} with file size ${body.file.size} is greater than 10MB! Please upload a smaller file.`
       );
@@ -116,6 +116,89 @@ export const addDocuments = (app: Elysia) =>
       updatedAt: sql`(CURRENT_TIMESTAMP)`,
       updatedBy: userInfo.userName
     }).where(eq(paperworksTable.id, body.paperworkId))
+    const res: GenericResponseInterface = {
+      success: true,
+      message: `Added ${body.file.name} document to paper work ${paperwork[0].name} successfully!`,
+      data: null,
+    };
+    return res;
+  }, {
+    body: t.Object({
+      file: t.File(),
+      paperworkId: t.String(),
+    }),
+  })
+  .post('/uploadv2', async ({ body, userInfo, set }) => {
+    // Check if paperwork exists
+    const paperwork = await db.select().from(paperworksTable).where(eq(paperworksTable.id, body.paperworkId));
+    if (paperwork.length === 0) {
+      set.status = 400;
+      const res: GenericResponseInterface = {
+        success: false,
+        message: `Paperwork with id ${body.paperworkId} does not exist!`,
+        data: null,
+      };
+      return res;
+    }
+
+    // Check file size
+    if (body.file.size > Number(process.env["MAX_FILE_SIZE_IN_MB"]) * 1024 * 1024) {
+      throw new Error(
+        `File ${body.file.name} with file size ${body.file.size} is greater than 10MB! Please upload a smaller file.`
+      );
+    }
+
+    const fileArrayBuffer = await body.file.arrayBuffer();
+    if (fileArrayBuffer.byteLength === 0) {
+      throw new Error(`File ${body.file.name} is empty!`);
+    }
+
+    const blobData = new Uint8Array(fileArrayBuffer);
+    const documentId = ulid();
+    
+    // Create directory structure if not exists
+    const filePath = `storage/${userInfo.selectedFileId}/${body.paperworkId}/${body.file.name}_${ulid}`;
+    await Bun.write(filePath, blobData);
+
+    const newDocument: InsertDocument = {
+      id: ulid(),
+      paperworkId: body.paperworkId,
+      fileSize: body.file.size,
+      fileName: body.file.name,
+      filePath: filePath,
+      createdBy: userInfo.userName,
+    };
+
+    await db.insert(documentsTable).values(newDocument);
+
+    // Handle image compression if file is an image
+    const fileExtension = body.file.name.substring(body.file.name.lastIndexOf('.') + 1);
+    if (IMAGE_FILE_TYPE.includes(fileExtension.toLowerCase())) {
+      const compressedBuffer = await sharp(blobData)
+        .jpeg({ quality: 50 })
+        .toBuffer();
+      
+      const compressedPath = `storage/${userInfo.selectedFileId}/${body.paperworkId}/${body.file.name}_compressed_${ulid}`;
+      await Bun.write(compressedPath, compressedBuffer);
+      
+      console.log(`Original: ${body.file.size} bytes, reduced: ${compressedBuffer.byteLength} bytes. Reduced: ${Math.round(100 - (compressedBuffer.byteLength / body.file.size * 100))}%`);
+      
+      await db.update(documentsTable)
+        .set({
+          reducedPath: compressedPath,
+          reducedSize: compressedBuffer.byteLength
+        })
+        .where(eq(documentsTable.id, documentId));
+    }
+
+    // Update paperwork updatedAt and updatedBy
+    await db.update(paperworksTable)
+      .set({
+        updatedAt: sql`(CURRENT_TIMESTAMP)`,
+        updatedBy: userInfo.userName
+      })
+      .where(eq(paperworksTable.id, body.paperworkId));
+
     const res: GenericResponseInterface = {
       success: true,
       message: `Added ${body.file.name} document to paper work ${paperwork[0].name} successfully!`,

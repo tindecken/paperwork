@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "880b55c6-1ed6-4701-bae7-6f2203bfbda2",
+  "id": "c9876240-94ab-4807-944d-7a6a5396bd57",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "categories": {
@@ -136,7 +136,28 @@
           "name": "fileBlob",
           "type": "blob",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coverBlob": {
+          "name": "coverBlob",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reducedBlob": {
+          "name": "reducedBlob",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reducedSize": {
+          "name": "reducedSize",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "createdAt": {
@@ -175,6 +196,20 @@
           "notNull": true,
           "autoincrement": false,
           "default": 0
+        },
+        "filePath": {
+          "name": "filePath",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reducedPath": {
+          "name": "reducedPath",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "isDeleted": {
           "name": "isDeleted",
