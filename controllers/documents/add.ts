@@ -9,6 +9,17 @@ import { isAdmin } from "../../libs/isAdmin";
 import { ulid } from "ulid";
 import sharp from 'sharp'
 import { IMAGE_FILE_TYPE } from "../constants/imageType";
+import { S3Client, type S3File } from "bun";
+
+
+const client = new S3Client({
+  accessKeyId: process.env["MINIO_ACCESSKEYID"],
+  secretAccessKey: process.env["MINIO_SECRETACCESSKEY"],
+  bucket: process.env["MINIO_BUCKET"],
+  endpoint: process.env["MINIO_ENDPOINT"],
+});
+
+
 export const addDocuments = (app: Elysia) =>
   app.use(userInfo)
   .post(
@@ -205,6 +216,69 @@ export const addDocuments = (app: Elysia) =>
       data: null,
     };
     return res;
+  }, {
+    body: t.Object({
+      file: t.File(),
+      paperworkId: t.String(),
+    }),
+  })
+  .post('/uploaduseminio', async ({ body, userInfo, set }) => {
+    const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);
+    if (!isAdminRights) {
+      throw new Error("Forbidden");
+    }
+    const paperwork = await db.select().from(paperworksTable).where(eq(paperworksTable.id, body.paperworkId))
+    if (paperwork.length === 0) {
+      throw new Error(`Paper work ${body.paperworkId} not found`)
+    }
+    if (body.file.size > Number(process.env["MAX_FILE_SIZE_IN_MB"]) * 1024 * 1024) {
+      throw new Error(
+        `File ${body.file.name} with file size ${body.file.size} is greater than 10MB! Please upload a smaller file.`
+      );
+    }
+    const fileArrayBuffer = await body.file.arrayBuffer();
+    const s3File: S3File = client.file(`${userInfo.selectedFileId}\\${body.paperworkId}\\${body.file.name}`);
+    await s3File.write(fileArrayBuffer);
+    const res: GenericResponseInterface = {
+      success: true,
+      message: `Added ${body.file.name} document to paper work ${paperwork[0].name} successfully!`,
+      data: null,
+    };
+    return res;
+    if (fileArrayBuffer.byteLength === 0)
+      throw new Error(`File ${body.file.name} is empty!`);
+    const blobData = new Uint8Array(fileArrayBuffer);
+    const newDocument: InsertDocument = {
+      id: ulid(),
+      paperworkId: body.paperworkId,
+      fileSize: body.file.size,
+      fileName: body.file.name,
+      fileBlob: Buffer.from(blobData),
+      createdBy: userInfo.userName,
+    };
+    await db.insert(documentsTable).values(newDocument);
+    // Set cover for the paperwork and reduce size of images
+    const documents = await db.select().from(documentsTable).where(eq(documentsTable.paperworkId, body.paperworkId))
+    const documentImages = documents.filter((doc) => {
+      const fileExtension = doc.fileName.substring(doc.fileName.lastIndexOf('.') + 1);
+      return IMAGE_FILE_TYPE.includes(fileExtension.toLowerCase())
+    });
+    //reduce size of all images
+    for (const image of documentImages) {
+      await sharp(image.fileBlob)
+      .jpeg({ quality: 50 })
+      .toBuffer()
+      .then(async (buffer: Buffer) => {
+        console.log(`Original: ${image.fileSize} bytes, reduced: ${buffer.byteLength} bytes. Reduced: ${Math.round(100 - (buffer.byteLength / image.fileSize * 100))}%`)
+        await db.update(documentsTable).set({reducedBlob: buffer, reducedSize: buffer.byteLength}).where(eq(documentsTable.id, image.id))
+      });
+    }
+    // update paperwork updatedAt and updatedBy
+    await db.update(paperworksTable).set({
+      updatedAt: sql`(CURRENT_TIMESTAMP)`,
+      updatedBy: userInfo.userName
+    }).where(eq(paperworksTable.id, body.paperworkId))
+    
   }, {
     body: t.Object({
       file: t.File(),

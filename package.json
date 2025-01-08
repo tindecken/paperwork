@@ -15,12 +15,11 @@
   },
   "type": "module",
   "devDependencies": {
-    "@types/bun": "^1.1.14",
     "better-sqlite3": "^11.7.2",
-    "drizzle-kit": "^0.24.2"
+    "drizzle-kit": "^0.30.1"
   },
   "peerDependencies": {
-    "typescript": "^5.5.4"
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "@elysiajs/bearer": "^1.2.0",
@@ -29,14 +28,18 @@
     "@elysiajs/html": "^1.2.0",
     "@elysiajs/jwt": "^1.2.0",
     "@elysiajs/swagger": "^1.2.0",
-    "@libsql/client": "^0.10.0",
+    "@libsql/client": "^0.14.0",
+    "@types/bun": "latest",
     "dotenv": "^16.4.7",
-    "drizzle-orm": "^0.33.0",
-    "drizzle-typebox": "^0.1.1",
-    "elysia": "^1.2.9",
+    "drizzle-orm": "^0.38.3",
+    "drizzle-typebox": "^0.2.1",
+    "elysia": "^1.2.10",
     "jose": "^5.9.6",
     "postgres": "^3.4.5",
     "sharp": "^0.33.5",
     "ulid": "^2.3.0"
+  },
+  "overrides": {
+    "bun-types": "^1.1.43-canary.20250108T140520"
   }
 }

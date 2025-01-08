@@ -60,7 +60,7 @@ export const createCategory = (app: Elysia) =>
       set.status = 403
       const res: GenericResponseInterface = {
         success: false,
-        message: `You are not allowed to create category!`,
+        message: `You are not allowed to create category, your role is ${userFile.role} instead of admin!`,
         data: null
       }
       return res
