@@ -119,6 +119,7 @@ export const documentsTable = sqliteTable('documents', {
   fileSize: real('fileSize').notNull(),
   filePath: text('filePath').notNull(),
   reducedImageSizeFilePath: text('reducedFilePath'),
+  reducedImageFileSize: real('reducedImageFileSize'),
   coverPath: text('coverPath'),
   createdAt: text('createdAt')
     .default(sql`(CURRENT_TIMESTAMP)`)

@@ -8,7 +8,14 @@ import type {GenericResponseInterface} from "../../models/GenericResponseInterfa
 import { ulid } from 'ulid'
 import sharp from 'sharp'
 import { IMAGE_FILE_TYPE } from '../constants/imageType.ts';
+import { S3Client, type S3File } from "bun";
 
+const client = new S3Client({
+  accessKeyId: process.env["MINIO_ACCESSKEYID"],
+  secretAccessKey: process.env["MINIO_SECRETACCESSKEY"],
+  bucket: process.env["MINIO_BUCKET"],
+  endpoint: process.env["MINIO_ENDPOINT"],
+});
 export const createPaperWork = (app: Elysia) =>
   app
     .use(userInfo)
@@ -63,13 +70,17 @@ export const createPaperWork = (app: Elysia) =>
           for (const file of body.files) {
             const fileArrayBuffer = await file.arrayBuffer();
             if (fileArrayBuffer.byteLength === 0) throw new Error(`File ${file.name} is empty!`)
-            const blobData = new Uint8Array(fileArrayBuffer);
+            // upload file to S3
+            const filePath = `${userInfo.selectedFileId}\\${insertedPaperWork[0].id}\\${file.name}`
+            const s3File: S3File = client.file(filePath);
+            await s3File.write(fileArrayBuffer);
             const document: typeof documentsTable.$inferInsert = {
               id: ulid(),
               paperworkId: insertedPaperWork[0].id,
               fileSize: file.size,
               fileName: file.name,
-              fileBlob: Buffer.from(blobData),
+              filePath: filePath,
+              isDeleted: 0,
               createdBy: userInfo.userName,
             }
             await tx
@@ -86,18 +97,34 @@ export const createPaperWork = (app: Elysia) =>
         return IMAGE_FILE_TYPE.includes(fileExtension.toLowerCase())
       });
       if (documentImages.length > 0) {
-        await sharp(documentImages[0].fileBlob).resize(200, 200).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (buffer: Buffer) => {
-          await db.update(documentsTable).set({isCover: 1, coverBlob: buffer}).where(eq(documentsTable.id, documentImages[0].id))
+        // get file from S3 based on documentImages[0].filePath then create cover image
+        const s3File: S3File = client.file(documentImages[0].filePath);
+        const buffer = await s3File.arrayBuffer();
+
+        await sharp(buffer).resize(200, 200).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (arrayBuffer: Buffer) => {
+          const coverFilePath = `${userInfo.selectedFileId}\\${ppwULID}\\cover.jpg`;
+          const s3File: S3File = client.file(coverFilePath);
+          await s3File.write(arrayBuffer);
+          await db.update(documentsTable).set({isCover: 1, coverPath: coverFilePath}).where(eq(documentsTable.id, documentImages[0].id))
         })
       }
       //reduce size of all images
       for (const image of documentImages) {
-        await sharp(image.fileBlob)
+        const s3File: S3File = client.file(image.filePath);
+        const buffer = await s3File.arrayBuffer();
+        await sharp(buffer)
         .jpeg({ quality: 50 })
         .toBuffer()
-        .then(async (buffer: Buffer) => {
-          console.log(`Original: ${image.fileSize} bytes, reduced: ${buffer.byteLength} bytes. Reduced: ${Math.round(100 - (buffer.byteLength / image.fileSize * 100))}%`)
-          await db.update(documentsTable).set({reducedBlob: buffer, reducedSize: buffer.byteLength}).where(eq(documentsTable.id, image.id))
+        .then(async (arrayBuffer: Buffer) => {
+          // check if file is an image, then reduce size
+          const fileWithoutExtension = image.fileName.substring(0, image.fileName.lastIndexOf('.'));
+          const fileExtension = image.fileName.substring(image.fileName.lastIndexOf('.') + 1);
+          const reducedFileName = `${fileWithoutExtension}_reduced.${fileExtension}`;
+          const reducedFilePath = `${userInfo.selectedFileId}\\${ppwULID}\\${reducedFileName}`;
+          const s3File: S3File = client.file(reducedFilePath);
+          await s3File.write(arrayBuffer);
+          const reducedImageFileSize = arrayBuffer.byteLength;
+          await db.update(documentsTable).set({ reducedImageSizeFilePath: reducedFilePath, reducedImageFileSize: reducedImageFileSize}).where(eq(documentsTable.id, image.id))
         });
       }
       const res: GenericResponseInterface = {

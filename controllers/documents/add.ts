@@ -48,6 +48,7 @@ export const addDocuments = (app: Elysia) =>
       fileSize: body.file.size,
       fileName: body.file.name,
       filePath: filePath,
+      isDeleted: 0,
       createdBy: userInfo.userName,
     };
     await db.insert(documentsTable).values(newDocument);
@@ -55,13 +56,16 @@ export const addDocuments = (app: Elysia) =>
     const fileWithoutExtension = body.file.name.substring(0, body.file.name.lastIndexOf('.'));
     const fileExtension = body.file.name.substring(body.file.name.lastIndexOf('.') + 1);
     const reducedFileName = `${fileWithoutExtension}_reduced.${fileExtension}`;
-    const reducedFilePath = `${userInfo.selectedFileId}\\${body.paperworkId}\\${newDocument.id}.${fileExtension}`;
+    const reducedFilePath = `${userInfo.selectedFileId}\\${body.paperworkId}\\${reducedFileName}`;
     if (IMAGE_FILE_TYPE.includes(fileExtension.toLowerCase())) {
       await sharp(fileArrayBuffer)
       .jpeg({ quality: 50 })
-      .toFile(reducedFileName)
-      .then(async () => {
-        await db.update(documentsTable).set({ reducedImageSizeFilePath: reducedFilePath}).where(eq(documentsTable.id, newDocument.id))
+      .toBuffer()
+      .then(async (arrayBuffer) => {
+        const s3File: S3File = client.file(reducedFilePath);
+        await s3File.write(arrayBuffer);
+        const reducedImageFileSize = arrayBuffer.byteLength;
+        await db.update(documentsTable).set({ reducedImageSizeFilePath: reducedFilePath, reducedImageFileSize: reducedImageFileSize}).where(eq(documentsTable.id, newDocument.id))
       });
     }
     // update paperwork updatedAt and updatedBy
