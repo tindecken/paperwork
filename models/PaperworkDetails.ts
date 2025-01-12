@@ -6,12 +6,14 @@ export interface PaperworkDetails extends SelectPaperwork {
         id: string
         fileName: string
         fileSize: number
+        filePath: string
     }[],
     images?: {
         id: string
         fileName: string
         fileSize: number
-        fileBlob: any
+        filePath: string
+        imageArrayBuffer: Uint8Array | null
         isCover: boolean | null
     }[],
 }

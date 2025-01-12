@@ -99,10 +99,10 @@ export const createPaperWork = (app: Elysia) =>
       if (documentImages.length > 0) {
         // get file from S3 based on documentImages[0].filePath then create cover image
         const s3File: S3File = client.file(documentImages[0].filePath);
-        const buffer = await s3File.arrayBuffer();
-
-        await sharp(buffer).resize(200, 200).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (arrayBuffer: Buffer) => {
-          const coverFilePath = `${userInfo.selectedFileId}\\${ppwULID}\\cover.jpg`;
+        const arrayBuffer = await s3File.arrayBuffer();
+        await sharp(arrayBuffer).resize(300, 300).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (arrayBuffer: Buffer) => {
+          const coverFileName = `${documentImages[0].fileName.substring(0, documentImages[0].fileName.lastIndexOf('.'))}_cover.jpg`;
+          const coverFilePath = `${userInfo.selectedFileId}\\${ppwULID}\\${coverFileName}`;
           const s3File: S3File = client.file(coverFilePath);
           await s3File.write(arrayBuffer);
           await db.update(documentsTable).set({isCover: 1, coverPath: coverFilePath}).where(eq(documentsTable.id, documentImages[0].id))

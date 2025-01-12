@@ -5,7 +5,15 @@ import type { GenericResponseInterface } from '../../models/GenericResponseInter
 import {eq, and } from "drizzle-orm"
 import {userInfo} from "../../middlewares/userInfo.ts";
 import type { PaperworkDetails } from '../../models/PaperworkDetails.ts';
+import { S3Client, type S3File } from "bun";
 
+
+const client = new S3Client({
+  accessKeyId: process.env["MINIO_ACCESSKEYID"],
+  secretAccessKey: process.env["MINIO_SECRETACCESSKEY"],
+  bucket: process.env["MINIO_BUCKET"],
+  endpoint: process.env["MINIO_ENDPOINT"],
+});
 export const getById = (app: Elysia) =>
   app
       .use(userInfo)
@@ -45,8 +53,11 @@ export const getById = (app: Elysia) =>
           id: documentsTable.id,
           fileName: documentsTable.fileName,
           fileSize: documentsTable.fileSize,
-          isCover: documentsTable.isCover
-        }).from(documentsTable).where(
+          isCover: documentsTable.isCover,
+          filePath: documentsTable.filePath,
+        })
+        .from(documentsTable)
+        .where(
           and(
             eq(documentsTable.paperworkId, paperworkId),
             eq(documentsTable.isDeleted, 0)
@@ -61,48 +72,35 @@ export const getById = (app: Elysia) =>
         || doc.fileName.toLowerCase().endsWith('.bmp')
         || doc.fileName.toLowerCase().endsWith('.heic')
         || doc.fileName.toLowerCase().endsWith('.tiff'))
-        const documentImagesWithBlobs: {
+        const documentImagesWithImageBuffer: {
           id: string
           fileName: string
           fileSize: number
-          fileBlob: any | null
+          filePath: string
+          imageArrayBuffer: Uint8Array | null
           isCover: boolean | null,
         }[] = []
         const documentAttachments = ppwDocuments.filter((doc) => !documentImages.includes(doc))
-        // get more fileBlob for documentImages
-        // ... previous code remains the same
-
-        // get more fileBlob for documentImages
         await Promise.all(
-          documentImages.map(async (doc) => {
-            // get reducedBlob instead of original fileBlob
-            const reducedFileBlobDoc = await db.select({ reducedBlob: documentsTable.reducedBlob, reducedSize: documentsTable.reducedSize}).from(documentsTable).where(
+          documentImages.map(async (docImage) => {
+            const reducedImageDoc = await db.select({ reducedImageFileSize: documentsTable.reducedImageFileSize, reducedImageSizeFilePath: documentsTable.reducedImageSizeFilePath}).from(documentsTable).where(
               and(
-                eq(documentsTable.id, doc.id),
+                eq(documentsTable.id, docImage.id),
                 eq(documentsTable.isDeleted, 0)
               )
             )
-            if (reducedFileBlobDoc.length > 0) {
-              documentImagesWithBlobs.push({
-                ...doc,
-                fileBlob: reducedFileBlobDoc[0].reducedBlob,
-                fileSize: reducedFileBlobDoc[0].reducedSize !== null ? reducedFileBlobDoc[0].reducedSize : 0, // Add a check for null
-                isCover: doc.isCover === 1 ? true : doc.isCover === 0 ? false : null,
+            if (reducedImageDoc.length > 0 && reducedImageDoc[0].reducedImageFileSize !== null) {
+              const s3CoverFile: S3File = client.file(reducedImageDoc[0].reducedImageSizeFilePath!);
+              const reduceImageBuffer = await s3CoverFile.arrayBuffer();
+              const reduceImageBufferUint8Array = new Uint8Array(reduceImageBuffer); // Convert to Uint8Array for easy use in browser
+
+              documentImagesWithImageBuffer.push({
+                ...docImage,
+                imageArrayBuffer: reduceImageBufferUint8Array,
+                fileSize: reducedImageDoc[0].reducedImageFileSize!,
+                filePath: reducedImageDoc[0].reducedImageSizeFilePath!,
+                isCover: docImage.isCover === 1 ? true : docImage.isCover === 0 ? false : null,
               })
-            } else { // get fileBlob for documentImages
-              const fileBlobDoc = await db.select({ fileBlob: documentsTable.fileBlob}).from(documentsTable).where(
-                and(
-                  eq(documentsTable.id, doc.id),
-                  eq(documentsTable.isDeleted, 0)
-                )
-              )
-              if (fileBlobDoc.length > 0) {
-                documentImagesWithBlobs.push({
-                  ...doc,
-                  fileBlob: fileBlobDoc[0].fileBlob,
-                  isCover: doc.isCover === 1? true : doc.isCover === 0? false : null,
-                })
-              }
             }
           })
         )
@@ -112,7 +110,7 @@ export const getById = (app: Elysia) =>
           ...pw[0],
           categories: categories,
           attachments: documentAttachments,
-          images: documentImagesWithBlobs,
+          images: documentImagesWithImageBuffer,
         }
         const res: GenericResponseInterface = {
           success: true,
@@ -131,4 +129,4 @@ export const getById = (app: Elysia) =>
         params: t.Object({
           paperworkId: t.String(),
         }),
-      });
+      })

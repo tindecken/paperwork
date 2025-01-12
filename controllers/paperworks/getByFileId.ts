@@ -4,7 +4,15 @@ import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import {eq, and, count } from "drizzle-orm"
 import {userInfo} from "../../middlewares/userInfo.ts";
+import { S3Client, type S3File } from "bun";
 
+
+const client = new S3Client({
+  accessKeyId: process.env["MINIO_ACCESSKEYID"],
+  secretAccessKey: process.env["MINIO_SECRETACCESSKEY"],
+  bucket: process.env["MINIO_BUCKET"],
+  endpoint: process.env["MINIO_ENDPOINT"],
+});
 export const getByFileid = (app: Elysia) =>
   app
       .use(userInfo)
@@ -29,7 +37,7 @@ export const getByFileid = (app: Elysia) =>
                   if (!paperworkMap.has(paperworkId)) {
                     paperworkMap.set(paperworkId, {
                         ...p.paperworks,
-                        coverBlob: null,
+                        coverArrayBuffer: null,
                         coverFileName: null,
                         documentCount: null,
                         categories: [cat.name] // Initialize with the current category ID
@@ -87,7 +95,15 @@ export const getByFileid = (app: Elysia) =>
             )
             // update ppws with cover
             if (documentsWithCover.length > 0) {
-              ppw.coverBlob = documentsWithCover[0].coverBlob
+              const s3CoverFile: S3File = client.file(documentsWithCover[0].coverPath!);
+              const coverBuffer = await s3CoverFile.arrayBuffer();
+              if (coverBuffer instanceof ArrayBuffer) {
+                ppw.coverArrayBuffer = new Uint8Array(coverBuffer); // Convert to Uint8Array for easy use in browser
+                console.log('ppw.coverArrayBuffer:',  ppw.coverArrayBuffer);
+              }
+              else {
+                console.error('coverBuffer is not an array:', coverBuffer);
+              }
               ppw.coverFileName = documentsWithCover[0].fileName
             }
         })

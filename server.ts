@@ -42,6 +42,8 @@ new Elysia()
         .use(categoriesController)
         .use(themesController)
         .onAfterHandle(({ response, set  }) => {
+            console.log('responseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee:')
+            console.log(response)
             const isJson = typeof response === 'object'
             const text = isJson
               ? JSON.stringify(response)
