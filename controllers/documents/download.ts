@@ -5,6 +5,16 @@ import { documentsTable } from "../../drizzle/schema";
 import { db } from "../../drizzle";
 import {and, eq} from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
+
+import { S3Client, type S3File } from "bun";
+
+const client = new S3Client({
+  accessKeyId: process.env["MINIO_ACCESSKEYID"],
+  secretAccessKey: process.env["MINIO_SECRETACCESSKEY"],
+  bucket: process.env["MINIO_BUCKET"],
+  endpoint: process.env["MINIO_ENDPOINT"],
+});
+
 export const download = (app: Elysia) =>
   app.use(userInfo)
   .post("/download", async ({ body, set }) => {
@@ -20,10 +30,17 @@ export const download = (app: Elysia) =>
       set.status = 404;
       throw new Error("Document not found or deleted")
     }
+    set.headers['Content-Encoding'] = 'gzip'
+    // download file from S3
+    const file: S3File = await client.file(documents[0].filePath)
+    const buffer = await file.bytes();
+    console.log(`Downloaded file: ${documents[0].filePath}`);
+    console.log(`File size: ${buffer.byteLength} bytes`);
+    const bufferUint8Array = new Uint8Array(buffer); // Convert to Uint8Array for easy use in browser
     const res: GenericResponseInterface = {
       success: true,
       message: "Get document successfully!",
-      data: documents[0],
+      data: buffer,
     }
     return res;
   },
