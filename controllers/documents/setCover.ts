@@ -6,7 +6,16 @@ import { db } from "../../drizzle";
 import {and, eq, sql} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
-import sharp from "sharp";
+import sharp from 'sharp'
+import { IMAGE_FILE_TYPE } from '../constants/imageType.ts';
+import { S3Client, type S3File } from "bun";
+
+const client = new S3Client({
+  accessKeyId: process.env["MINIO_ACCESSKEYID"],
+  secretAccessKey: process.env["MINIO_SECRETACCESSKEY"],
+  bucket: process.env["MINIO_BUCKET"],
+  endpoint: process.env["MINIO_ENDPOINT"],
+});
 export const setCover = (app: Elysia) =>
   app.use(userInfo)
 .post(
@@ -41,15 +50,18 @@ export const setCover = (app: Elysia) =>
         return res
       }
       // update isCover = 0 for all documents
-      await db.update(documentsTable).set({ isCover: 0, coverBlob: null}).where(eq(documentsTable.paperworkId, body.paperworkId))
+      await db.update(documentsTable).set({ isCover: 0, coverPath: null}).where(eq(documentsTable.paperworkId, body.paperworkId))
+      // resize and update coverPath and coverBlob for selected document
+      // get file from S3 based on documentImages[0].filePath then create cover image
+      const s3File: S3File = client.file(documentPaperwork[0].filePath);
+      const arrayBuffer = await s3File.arrayBuffer();
 
-      sharp(documentPaperwork[0].fileBlob).resize(200, 200).toBuffer().then(async (buffer: Buffer) => {
-        await db.update(documentsTable).set({isCover: 1, coverBlob: buffer}).where(
-          and(
-            eq(documentsTable.paperworkId, body.paperworkId),
-            eq(documentsTable.id, body.documentId)
-          )
-        )
+      await sharp(arrayBuffer).resize(300, 300).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (arrayBuffer: Buffer) => {
+        const coverFileName = `${documentPaperwork[0].fileName.substring(0, documentPaperwork[0].fileName.lastIndexOf('.'))}_cover.jpg`;
+        const coverFilePath = `${userInfo.selectedFileId}\\${body.paperworkId}\\${coverFileName}`;
+        const s3File: S3File = client.file(coverFilePath);
+        await s3File.write(arrayBuffer);
+        await db.update(documentsTable).set({isCover: 1, coverPath: coverFilePath}).where(eq(documentsTable.id, documentPaperwork[0].id))
       })
       // update paperwork updatedAt and updatedBy
       await db.update(paperworksTable).set({
