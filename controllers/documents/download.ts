@@ -34,8 +34,6 @@ export const download = (app: Elysia) =>
     // download file from S3
     const file: S3File = await client.file(documents[0].filePath)
     const buffer = await file.bytes();
-    console.log(`Downloaded file: ${documents[0].filePath}`);
-    console.log(`File size: ${buffer.byteLength} bytes`);
     const bufferUint8Array = new Uint8Array(buffer); // Convert to Uint8Array for easy use in browser
     const res: GenericResponseInterface = {
       success: true,
