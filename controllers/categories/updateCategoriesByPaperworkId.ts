@@ -1,12 +1,13 @@
 import { Elysia, t } from 'elysia';
 import {
+    categoriesTable,
     type InsertPaperworksCategories,
     paperworksCategoriesTable,
     paperworksTable
 } from '../../drizzle/schema.ts'
 import { db } from '../../drizzle/index.ts'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface.ts';
-import {eq, sql} from "drizzle-orm"
+import {eq, sql, and, ne} from "drizzle-orm"
 import {userInfo} from "../../middlewares/userInfo.ts";
 import {ulid} from "ulid";
 
@@ -25,8 +26,29 @@ export const updateCategoriesByPaperworkId = (app: Elysia) =>
             }
             return res
           }
+          // get Uncategorized category id
+					const uncategorizedCategory = await db.select().from(categoriesTable).where(
+							and(
+									eq(categoriesTable.name, 'Uncategorized'),
+									eq(categoriesTable.fileId, userInfo.selectedFileId!),
+							)
+							
+					)
+					// check Uncategorized category exist or not
+					if (uncategorizedCategory.length === 0) {
+							set.status = 400
+							const res: GenericResponseInterface = {
+									success: false,
+									message: 'Uncategorized category does not exist!',
+									data: null
+							}
+							return res
+					}
           await db.delete(paperworksCategoriesTable).where(
-              eq(paperworksCategoriesTable.paperworkId, body.paperworkId)
+            and(
+                eq(paperworksCategoriesTable.paperworkId, body.paperworkId),
+								ne(paperworksCategoriesTable.categoryId, uncategorizedCategory[0].id)
+            )
           )
           // re-add the paperwork categories
           await Promise.all(

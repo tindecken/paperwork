@@ -8,7 +8,7 @@ import {
 } from "../../drizzle/schema.ts";
 import { db } from "../../drizzle";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
-import { eq, and } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import { userInfo } from "../../middlewares/userInfo.ts";
 import type { PaperworkDetails } from "../../models/PaperworkDetails.ts";
 import { S3Client, type S3File } from "bun";
@@ -55,7 +55,8 @@ export const getById = (app: Elysia) =>
             .where(
               and(
                 eq(categoriesTable.id, pwCat.categoryId),
-                eq(categoriesTable.isDeleted, 0)
+                eq(categoriesTable.isDeleted, 0),
+                ne(categoriesTable.name, "Uncategorized")
               )
             );
           if (cat.length > 0) {
@@ -206,7 +207,8 @@ export const getByIdReturnBlob = (app: Elysia) =>
             .where(
               and(
                 eq(categoriesTable.id, pwCat.categoryId),
-                eq(categoriesTable.isDeleted, 0)
+                eq(categoriesTable.isDeleted, 0),
+                ne(categoriesTable.name, "Uncategorized")
               )
             );
           if (cat.length > 0) {

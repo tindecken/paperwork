@@ -2,7 +2,7 @@ import { Elysia } from 'elysia';
 import {categoriesTable, paperworksCategoriesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
-import {eq, and } from "drizzle-orm"
+import {eq, and, ne } from "drizzle-orm"
 import {userInfo} from "../../middlewares/userInfo.ts";
 
 export const getCategoriesByFileId = (app: Elysia) =>
@@ -12,7 +12,8 @@ export const getCategoriesByFileId = (app: Elysia) =>
         const categories = await db.select().from(categoriesTable).where(
             and(
               eq(categoriesTable.fileId, userInfo.selectedFileId!),
-              eq(categoriesTable.isDeleted, 0)
+              eq(categoriesTable.isDeleted, 0),
+              ne(categoriesTable.name, 'Uncategorized')
             )
         )
         const data = await Promise.all(

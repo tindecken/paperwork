@@ -35,7 +35,7 @@ export const deleteCategory = (app: Elysia) =>
           // update the current name to name_ULID, isDeleted = 1
           await db.update(categoriesTable)
             .set({ 
-              name: `${existingCategory[0].name}_${ulid}`,
+              name: `${existingCategory[0].name}_${ulid()}`,
               isDeleted: 1,
               updatedBy: userInfo.name
             })
