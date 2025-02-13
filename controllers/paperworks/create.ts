@@ -9,7 +9,7 @@ import {
 } from "../../drizzle/schema.ts";
 import { db } from "../../drizzle";
 import { isAdmin } from "../../libs/isAdmin.ts";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 import { ulid } from "ulid";
 import sharp from "sharp";
@@ -30,11 +30,13 @@ export const createPaperWork = (app: Elysia) =>
         set.status = 400;
         throw new Error("Name is required!");
       }
-      const category = await db.query.categoriesTable.findFirst({
-        where: eq(categoriesTable.id, body.categoryId),
-      });
-      if (!category) {
-        throw new Error(`Category ${body.categoryId} not found!`);
+      if (body.categoryId.trim().length != 0) {
+        const category = await db.query.categoriesTable.findFirst({
+          where: eq(categoriesTable.id, body.categoryId),
+        });
+        if (!category) {
+          throw new Error(`Category ${body.categoryId} not found!`);
+        }
       }
       const isAdminRights = await isAdmin(
         userInfo.userId,
@@ -71,14 +73,33 @@ export const createPaperWork = (app: Elysia) =>
           .insert(paperworksTable)
           .values(ppw)
           .returning();
-        // create paperwork-category relationship
-        const pwc: typeof paperworksCategoriesTable.$inferInsert = {
+        // create paperwork-category relationship with category Uncategorized
+        const uncategorizedCategory = await db.query.categoriesTable.findFirst({
+          where: and(
+              eq(categoriesTable.name, "Uncategorized"),
+              eq(categoriesTable.fileId, userInfo.selectedFileId!),
+            )
+        });
+        if (!uncategorizedCategory) {
+          throw new Error("Category Uncategorized not found!");
+        }
+        const uncategorizedPwc: typeof paperworksCategoriesTable.$inferInsert = {
           id: ulid(),
           paperworkId: insertedPaperWork[0].id,
-          categoryId: body.categoryId,
+          categoryId: uncategorizedCategory.id,
           createdBy: userInfo.userName,
         };
-        await tx.insert(paperworksCategoriesTable).values(pwc).returning();
+        await tx.insert(paperworksCategoriesTable).values(uncategorizedPwc).returning();
+        // create paperwork-category relationship
+        if (body.categoryId !== '') {
+          const pwc: typeof paperworksCategoriesTable.$inferInsert = {
+            id: ulid(),
+            paperworkId: insertedPaperWork[0].id,
+            categoryId: body.categoryId,
+            createdBy: userInfo.userName,
+          };
+          await tx.insert(paperworksCategoriesTable).values(pwc).returning();
+        }
         // create documents for uploaded files
         if (body.files) {
           for (const file of body.files) {
