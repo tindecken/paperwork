@@ -108,8 +108,6 @@ export const createPaperWork = (app: Elysia) =>
               throw new Error(`File ${file.name} is empty!`);
             // upload file to S3
             const filePath = `${userInfo.selectedFileId}\\${insertedPaperWork[0].id}\\${file.name}`;
-            const s3File: S3File = client.file(filePath);
-            await s3File.write(fileArrayBuffer);
             const document: typeof documentsTable.$inferInsert = {
               id: ulid(),
               paperworkId: insertedPaperWork[0].id,
@@ -120,6 +118,9 @@ export const createPaperWork = (app: Elysia) =>
               createdBy: userInfo.userName,
             };
             await tx.insert(documentsTable).values(document).returning();
+            const s3File: S3File = client.file(filePath);
+            await s3File.write(fileArrayBuffer);
+            
           }
         }
       });

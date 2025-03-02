@@ -16,7 +16,7 @@
   "type": "module",
   "devDependencies": {
     "better-sqlite3": "^11.8.1",
-    "drizzle-kit": "^0.30.4"
+    "drizzle-kit": "^0.30.5"
   },
   "peerDependencies": {
     "typescript": "^5.7.2"
@@ -27,14 +27,14 @@
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/html": "^1.2.0",
     "@elysiajs/jwt": "^1.2.0",
-    "@elysiajs/swagger": "^1.2.0",
+    "@elysiajs/swagger": "^1.2.2",
     "@libsql/client": "^0.14.0",
     "@types/bun": "latest",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.38.4",
     "drizzle-typebox": "^0.2.1",
-    "elysia": "^1.2.12",
-    "jose": "^5.9.6",
+    "elysia": "^1.2.24",
+    "jose": "^5.10.0",
     "postgres": "^3.4.5",
     "sharp": "^0.33.5",
     "ulid": "^2.3.0"
