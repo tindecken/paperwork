@@ -1,5 +1,5 @@
-import { sqliteTable, AnySQLiteColumn, uniqueIndex, foreignKey, text, integer, real, blob } from "drizzle-orm/sqlite-core"
-  import { sql } from "drizzle-orm"
+import { sqliteTable, uniqueIndex, text, integer, real, blob } from "drizzle-orm/sqlite-core"
+
 
 export const categories = sqliteTable("categories", {
 	id: text("id").primaryKey().notNull(),
