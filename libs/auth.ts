@@ -1,14 +1,9 @@
 import { betterAuth } from "better-auth";
-import { LibsqlDialect } from "@libsql/kysely-libsql";
- 
-const dialect = new LibsqlDialect({
-    url: process.env['TURSO_DATABASE_URL'] || "",
-    authToken: process.env['TURSO_AUTH_TOKEN'] || "",
-})
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { db } from "../drizzle/index"; // your drizzle instance
  
 export const auth = betterAuth({
-  database: {
-    dialect,
-    type: "sqlite"
-  }
+    database: drizzleAdapter(db, {
+        provider: "sqlite", // or "mysql", "sqlite"
+    })
 });
