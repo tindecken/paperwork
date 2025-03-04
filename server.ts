@@ -1,17 +1,19 @@
 import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
-import { auth } from './controllers/auth/auth'
+// import { auth } from './controllers/auth/auth'
 import { filesController } from './controllers/files'
 import { themesController } from './controllers/themes'
 import { cookie } from "@elysiajs/cookie";
 import type { GenericResponseInterface } from './models/GenericResponseInterface'
 import { documentsController } from "./controllers/documents";
 import { paperworksController } from "./controllers/paperworks";
-import {categoriesController} from "./controllers/categories";
-import type {InsertLog} from "./drizzle/schema.ts";
-import {ulid} from "ulid";
-import {log} from "./libs/logging.ts";
+import { categoriesController } from "./controllers/categories";
+import type { InsertLog } from "./drizzle/schema.ts";
+import { ulid } from "ulid";
+import { log } from "./libs/logging.ts";
+import { betterAuth } from "./middlewares/betterAuth";
+
 const listenPort = 3001
 const tls = (process.env.NODE_ENV === 'production') ? {
     cert: Bun.file(process.env['CERT']!),
@@ -19,7 +21,6 @@ const tls = (process.env.NODE_ENV === 'production') ? {
 }: {}
 const encoder = new TextEncoder()
 new Elysia()
-    
     .use(swagger())
     .use(cors({
         origin: [/.*\.onrender\.com$/, /.*\.netlify\.app$/, /.*\.tindecken\.xyz$/, 'tindecken.xyz', 'localhost', 'localhost:1000', /.*\.duckdns\.org$/]
@@ -34,8 +35,9 @@ new Elysia()
     )
     .group('/api', (app) =>
         app
+        .use(betterAuth)
         .use(cookie())
-        .use(auth)
+        // .use(auth)
         .use(documentsController)
         .use(filesController)
         .use(paperworksController)

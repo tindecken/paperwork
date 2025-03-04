@@ -1,12 +1,17 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text, real, blob, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
-export const usersTable = sqliteTable('users', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  userName: text('userName').unique().notNull(),
-  email: text('email').unique().notNull(),
-  password: text('password').notNull(),
+
+//betterAuth schema
+export const userTable = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
+  image: text("image"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  // password: text('password').notNull(),
   systemRole: text('systemRole').notNull().default('user'),
   type: text('type').notNull().default('free'),
   avatar: blob('avatar'),
@@ -15,9 +20,67 @@ export const usersTable = sqliteTable('users', {
   isDeleted: integer('isDeleted').notNull().default(0),
 });
 
+export const session = sqliteTable("session", {
+  id: text("id").primaryKey(),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+});
+
+export const account = sqliteTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: integer("access_token_expires_at", {
+    mode: "timestamp",
+  }),
+  refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+    mode: "timestamp",
+  }),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
+
+export const verification = sqliteTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }),
+  updatedAt: integer("updated_at", { mode: "timestamp" }),
+});
+
+// export const usersTable = sqliteTable('users', {
+//   id: text('id').primaryKey(),
+//   name: text('name').notNull(),
+//   userName: text('userName').unique().notNull(),
+//   email: text('email').unique().notNull(),
+//   password: text('password').notNull(),
+//   systemRole: text('systemRole').notNull().default('user'),
+//   type: text('type').notNull().default('free'),
+//   avatar: blob('avatar'),
+//   themeId: text('themeId').notNull().references(() => themesTable.id, { onDelete: 'cascade' }),
+//   isActivated: integer('isActivated').notNull().default(0),
+//   isDeleted: integer('isDeleted').notNull().default(0),
+// });
+
 export const usersFilesTable = sqliteTable('userFiles', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+  userId: text('userId').notNull().references(() => userTable.id, { onDelete: 'cascade' }),
   fileId: text('fileId').notNull().references(() => filesTable.id, { onDelete: 'cascade' }),
   role: text('role').notNull(),
   isSelected: integer('isSelected').notNull().default(0),
@@ -34,7 +97,7 @@ export const usersSettingsTable = sqliteTable('usersSettings', {
   id: text('id').primaryKey(),
   userId: text('userId')
     .notNull()
-    .references(() => usersTable.id, { onDelete: 'cascade' }),
+    .references(() => userTable.id, { onDelete: 'cascade' }),
   settingId: text('userId')
     .notNull()
     .references(() => settingsTable.id, { onDelete: 'cascade' }),
@@ -173,8 +236,8 @@ export const themesTable = sqliteTable('themes', {
   isDeleted: integer('isDeleted').notNull().default(0),
 });
 
-export type InsertUser = typeof usersTable.$inferInsert;
-export type SelectUser = typeof usersTable.$inferSelect;
+// export type InsertUser = typeof usersTable.$inferInsert;
+// export type SelectUser = typeof usersTable.$inferSelect;
 
 export type InsertFile = typeof filesTable.$inferInsert;
 export type SelectFile = typeof filesTable.$inferSelect;
