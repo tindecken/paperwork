@@ -22,6 +22,48 @@
       "when": 1736520726361,
       "tag": "0002_amazing_lila_cheney",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1741358760980,
+      "tag": "0003_ancient_zeigeist",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1741359202326,
+      "tag": "0004_damp_hardball",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1741359517095,
+      "tag": "0005_flowery_impossible_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1741361457931,
+      "tag": "0006_many_human_fly",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1741362149975,
+      "tag": "0007_closed_lenny_balinger",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1741362261628,
+      "tag": "0008_special_mephistopheles",
+      "breakpoints": true
     }
   ]
 }
