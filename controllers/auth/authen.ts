@@ -1,6 +1,6 @@
 import {Elysia, t} from "elysia"
 import { db } from '../../drizzle'
-import {themesTable, usersFilesTable, userTable, type InsertUser} from '../../drizzle/schema'
+import {themesTable, usersFilesTable, usersTable, type InsertUser} from '../../drizzle/schema'
 import * as jose from 'jose'
 import {and, eq} from 'drizzle-orm'
 import {createInsertSchema} from "drizzle-typebox"
@@ -8,77 +8,48 @@ import type {TokenInterface} from "../../models/TokenInterface"
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface"
 import {bearer} from "@elysiajs/bearer"
 import { ulid } from "ulid"
+import { auth } from "../../libs/auth"
+import { APIError } from "better-auth/api";
 
-export const auth = (app: Elysia) => app
+
+
+export const authen = (app: Elysia) => app
     .use(bearer())
     .group('/auth', (app) =>
-        // app.signUp('/signup', async ({body}) => {
-        //         await authClient.signUp.email({
-        //             email: body.email,
-        //             password: body.password,
-        //             name: body.name
-        //         }, {
-        //             onRequest: (ctx) => {
-        //                 //show loading
-        //             },
-        //             onSuccess: (ctx) => {
-        //                 //redirect to the dashboard or sign in page
-        //             },
-        //             onError: (ctx) => {
-        //                 // display the error message
-        //                 alert(ctx.error.message);
-        //             }
-        //     })
-        .post('/login', async ({ body, set }) => {
-            const user = await db
-                .select()
-                .from(usersTable)
-                .where(eq(usersTable.userName, body.userName))
-            if (user.length === 0) {
-                set.status = 401
-                throw new Error('User not found')
-            }
-            const isPasswordValid = await Bun.password.verify(body.password, user[0].password)
-            if (!isPasswordValid) {
-                set.status = 1
-                throw new Error('Invalid credentials')
-            }
-            // Get selectedFiles
-            const usersFiles = await db.select().from(usersFilesTable).where(
-                and(
-                    eq(usersFilesTable.userId, user[0].id),
-                    eq(usersFilesTable.isSelected, 1)
-                )
-            )
-            const alg = process.env["JWT_ALGORITHM"] || 'HS256'
-            const token = await new jose.SignJWT({
-                userId: user[0].id,
-                name: user[0].name,
-                userName: user[0].userName,
-                email: user[0].email,
-                systemRole: user[0].systemRole,
-                selectedFileId: usersFiles.length > 0 ? usersFiles[0].fileId : null,
-                role: usersFiles.length > 0 ? usersFiles[0].role : null,
-                maxEpx: Date.now() + 60 * 60 * 20000
-            })
-                .setProtectedHeader({alg})
-                .setIssuedAt()
-                .setExpirationTime('24h')
-                .sign(new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
-            const res: GenericResponseInterface = {
-                success: true, 
-                message: "Login success", 
-                data: {
-                    token
+        app
+        .post(
+            "/signup",
+            async ({ body, set }) => {
+              try{
+                const { email, password, name } = body;
+                const result = await auth.api.signUpEmail({
+                  body: {
+                    name,
+                    email,
+                    password,
+                    isDeleted: 0
+                  }
+                });
+                console.log('resultttttttt', result.user)
+                if (!result.user) {
+                  set.status = 400;
+                  return { error: "Signup failed" };
                 }
+                return { message: "Signup successful", user: result.user };
+              } catch (error) {
+                if (error instanceof APIError) {
+                  console.log('errrrrrrrrr', error)
+                }
+              }
+            },
+            {
+              body: t.Object({
+                email: t.String({ format: "email" }),
+                password: t.String({ minLength: 6 }),
+                name: t.String({ minLength: 3 }),
+              }),
             }
-            return res
-        }, {
-            body: t.Object({
-                userName: t.String({maxLength: 100}),
-                password: t.String({minLength: 3, maxLength: 100}),
-            })
-        })
+          )
         // .post('/register', async ({body}) => {
         //     // get first theme
         //     const themes = await db.select().from(themesTable)
@@ -179,5 +150,4 @@ export const auth = (app: Elysia) => app
         //         confirmNewPassword: t.String()
         //       }),
         // })
-        })
     )

@@ -1,8 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text, real, blob, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
-
-//betterAuth schema
+// betterAuth schema
 export const usersTable = sqliteTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -12,17 +11,17 @@ export const usersTable = sqliteTable("users", {
   userType: text('userType').notNull().default('free'),
   image: text("image"),
   avatar: text('avatar'),
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
 
-export const session = sqliteTable("sessions", {
+export const sessionsTable = sqliteTable("sessions", {
   id: text("id").primaryKey(),
   expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
   token: text("token").notNull().unique(),
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   ipAddress: text("ipAddress"),
   userAgent: text("userAgent"),
   userId: text("userId")
@@ -30,7 +29,7 @@ export const session = sqliteTable("sessions", {
     .references(() => usersTable.id, { onDelete: "cascade" }),
 });
 
-export const account = sqliteTable("accounts", {
+export const accountsTable = sqliteTable("accounts", {
   id: text("id").primaryKey(),
   accountId: text("accountId").notNull(),
   providerId: text("providerId").notNull(),
@@ -48,17 +47,17 @@ export const account = sqliteTable("accounts", {
   }),
   scope: text("scope"),
   password: text("password"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
 });
 
-export const verification = sqliteTable("verifications", {
+export const verificationsTable = sqliteTable("verifications", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp" }),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }),
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(sql`(unixepoch())`),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
 });
 
 export const usersFilesTable = sqliteTable('usersFiles', {
@@ -67,11 +66,9 @@ export const usersFilesTable = sqliteTable('usersFiles', {
   fileId: text('fileId').notNull().references(() => filesTable.id, { onDelete: 'cascade' }),
   role: text('role').notNull(),
   isSelected: integer('isSelected').notNull().default(0),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
@@ -84,13 +81,12 @@ export const usersSettingsTable = sqliteTable('usersSettings', {
   settingId: text('userId')
     .notNull()
     .references(() => settingsTable.id, { onDelete: 'cascade' }),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
 });
+
 export const usersThemesTable = sqliteTable('usersThemes', {
   id: text('id').primaryKey(),
   userId: text('userId')
@@ -99,11 +95,9 @@ export const usersThemesTable = sqliteTable('usersThemes', {
   themeId: text('themeId')
     .notNull()
     .references(() => themesTable.id, { onDelete: 'cascade' }),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
 });
 
@@ -111,11 +105,9 @@ export const filesTable = sqliteTable('files', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
@@ -127,11 +119,9 @@ export const categoriesTable = sqliteTable('categories', {
     .references(() => filesTable.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 }, (t) => ({
@@ -145,11 +135,9 @@ export const paperworksTable = sqliteTable('paperworks', {
   issuedAt: text('issuedAt'),
   price: real('price'),
   priceCurrency: text('priceCurrency'),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
@@ -162,11 +150,9 @@ export const paperworksCategoriesTable = sqliteTable('paperworksCategories', {
   categoryId: text('categoryId')
     .notNull()
     .references(() => categoriesTable.id, { onDelete: 'cascade' }),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
@@ -182,11 +168,9 @@ export const documentsTable = sqliteTable('documents', {
   reducedImageSizeFilePath: text('reducedFilePath'),
   reducedImageFileSize: real('reducedImageFileSize'),
   coverPath: text('coverPath'),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
   isCover: integer('isCover').notNull().default(0),
   isDeleted: integer('isDeleted').notNull().default(0)
@@ -202,9 +186,7 @@ export const logsTable = sqliteTable('logs', {
   newData: text('newData'),
   actionBy: text('actionBy'),
   ipaddress: text('ipaddress'),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
 });
 
 export const settingsTable = sqliteTable('settings', {
@@ -212,11 +194,9 @@ export const settingsTable = sqliteTable('settings', {
   key: text('key').unique().notNull(),
   value: text('value').notNull(),
   description: text('description'),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });
@@ -226,11 +206,9 @@ export const themesTable = sqliteTable('themes', {
   name: text('name').notNull(),
   value: text('value').notNull(),
   description: text('description'),
-  createdAt: text('createdAt')
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
+  createdAt: integer('createdAt', { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   createdBy: text('createdBy'),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updatedAt', { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   updatedBy: text('updatedBy'),
   isDeleted: integer('isDeleted').notNull().default(0),
 });

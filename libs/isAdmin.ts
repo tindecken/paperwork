@@ -1,16 +1,16 @@
 import { and, eq } from 'drizzle-orm'
 import { db } from '../drizzle'
-import {usersFilesTable, userTable} from "../drizzle/schema.ts";
+import {usersFilesTable, usersTable} from "../drizzle/schema.ts";
 
 // Getting admin rights
 export const isAdmin = async (userId: string, selectedFileId: string) => {
   if (selectedFileId === undefined) {
     throw new Error('Please selected file first')
   }
-  const user = await db.select().from(userTable).where(
+  const user = await db.select().from(usersTable).where(
     and(
-      eq(userTable.id, userId),
-      eq(userTable.isDeleted, 0),
+      eq(usersTable.id, userId),
+      eq(usersTable.isDeleted, 0),
     ))
   if (user.length === 0) {
     throw new Error('User not found or deleted')

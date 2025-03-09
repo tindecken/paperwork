@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
-// import { auth } from './controllers/auth/auth'
+import { authen } from './controllers/auth/authen'
 import { filesController } from './controllers/files'
 import { themesController } from './controllers/themes'
 import { cookie } from "@elysiajs/cookie";
@@ -37,7 +37,7 @@ new Elysia()
         app
         .use(betterAuth)
         .use(cookie())
-        // .use(auth)
+        .use(authen)
         .use(documentsController)
         .use(filesController)
         .use(paperworksController)
