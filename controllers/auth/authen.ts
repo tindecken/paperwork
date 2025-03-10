@@ -30,15 +30,21 @@ export const authen = (app: Elysia) => app
                     isDeleted: 0
                   }
                 });
-                console.log('resultttttttt', result.user)
-                if (!result.user) {
-                  set.status = 400;
-                  return { error: "Signup failed" };
+                set.status = 404
+                const res: GenericResponseInterface = {
+                  success: false,
+                  message: 'Signup successful',
+                  data: result.user
                 }
-                return { message: "Signup successful", user: result.user };
+                return res
               } catch (error) {
                 if (error instanceof APIError) {
-                  console.log('errrrrrrrrr', error)
+                  const res: GenericResponseInterface = {
+                    success: false,
+                    message: error.message || 'Failed to signup',
+                    data: null
+                  }
+                  return res
                 }
               }
             },
