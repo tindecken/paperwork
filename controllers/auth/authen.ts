@@ -30,7 +30,7 @@ export const authen = (app: Elysia) => app
                     isDeleted: 0
                   }
                 });
-                set.status = 404
+                set.status = 200
                 const res: GenericResponseInterface = {
                   success: false,
                   message: 'Signup successful',
