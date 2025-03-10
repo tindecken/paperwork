@@ -39,6 +39,7 @@ export const authen = (app: Elysia) => app
                 return res
               } catch (error) {
                 if (error instanceof APIError) {
+                  set.status = 400
                   const res: GenericResponseInterface = {
                     success: false,
                     message: error.message || 'Failed to signup',
