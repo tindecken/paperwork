@@ -14,6 +14,9 @@ export const auth = betterAuth({
             return ulid()
         },
     },
+    trustedOrigins: [
+        "http://localhost:3000",
+        "http://localhost:1000"],
     emailAndPassword: {
         enabled: true,
     },

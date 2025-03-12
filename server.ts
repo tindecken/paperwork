@@ -12,7 +12,7 @@ import { categoriesController } from "./controllers/categories";
 import type { InsertLog } from "./drizzle/schema.ts";
 import { ulid } from "ulid";
 import { log } from "./libs/logging.ts";
-// import { betterAuth } from "./middlewares/betterAuth";
+import { betterAuth } from "./middlewares/betterAuth";
 import { auth } from './libs/auth.ts'
 
 const listenPort = 3001
@@ -22,10 +22,10 @@ const tls = (process.env.NODE_ENV === 'production') ? {
 }: {}
 const encoder = new TextEncoder()
 new Elysia()
-    .mount(auth.handler)
+    .use(betterAuth)
     .use(swagger())
     .use(cors({
-        origin: [/.*\.onrender\.com$/, /.*\.netlify\.app$/, /.*\.tindecken\.xyz$/, 'tindecken.xyz', 'localhost', 'localhost:1000', /.*\.duckdns\.org$/, 'localhost:3001']
+        origin: [/.*\.onrender\.com$/, /.*\.netlify\.app$/, /.*\.tindecken\.xyz$/, 'tindecken.xyz', 'localhost', 'localhost:1000', /.*\.duckdns\.org$/]
     }))
     .group('/test', (app) => 
         app.get('/env', async () => {
