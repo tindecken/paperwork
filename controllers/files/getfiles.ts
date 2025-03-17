@@ -10,7 +10,7 @@ export const getFiles = (app: Elysia) =>
     app
     .use(userInfo)
         // get associated file by user
-    .get('/getFiles', async ({ userInfo}) => {
+    .get('/getFiles', async ({ userInfo }) => {
         const usersFiles = await db.select().from(usersFilesTable).where(
             and(
                 eq(usersFilesTable.userId, userInfo.userId),

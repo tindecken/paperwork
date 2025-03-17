@@ -15,7 +15,7 @@
   },
   "type": "module",
   "devDependencies": {
-    "better-sqlite3": "^11.8.1",
+    "better-sqlite3": "^11.9.0",
     "drizzle-kit": "^0.30.5"
   },
   "peerDependencies": {
@@ -31,11 +31,11 @@
     "@libsql/client": "^0.14.0",
     "@libsql/kysely-libsql": "^0.4.1",
     "@types/bun": "latest",
-    "better-auth": "^1.2.3",
+    "better-auth": "^1.2.4",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.38.4",
     "drizzle-typebox": "^0.2.1",
-    "elysia": "^1.2.24",
+    "elysia": "^1.2.25",
     "jose": "^5.10.0",
     "postgres": "^3.4.5",
     "sharp": "^0.33.5",

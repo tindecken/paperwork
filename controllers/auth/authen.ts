@@ -57,6 +57,51 @@ export const authen = (app: Elysia) => app
               }),
             }
           )
+        .post(
+            "/loginWithEmail",
+            async ({ body, set }) => {
+              try{
+                const { email, password } = body;
+                const result = await auth.api.signInEmail({
+                  body: {
+                    email,
+                    password
+                  }
+                });
+                // get selecedfileId
+                const usersFiles = await db.select().from(usersFilesTable).where(
+                  and(
+                    eq(usersFilesTable.userId, result.user.id),
+                    eq(usersFilesTable.isDeleted, 0)
+                ))
+                
+
+                set.status = 200
+                const res: GenericResponseInterface = {
+                  success: true,
+                  message: 'Login successful',
+                  data: result
+                }
+                return res
+              } catch (error) {
+                if (error instanceof APIError) {
+                  set.status = 400
+                  const res: GenericResponseInterface = {
+                    success: false,
+                    message: error.message || 'Failed to login',
+                    data: null
+                  }
+                  return res
+                }
+              }
+            }, {
+              body: t.Object({
+                email: t.String({ format: "email" }),
+                password: t.String({ minLength: 6 }),
+                name: t.String({ minLength: 3 }),
+              }),
+            }
+          )
         // .post('/register', async ({body}) => {
         //     // get first theme
         //     const themes = await db.select().from(themesTable)

@@ -20,6 +20,7 @@ export const sessionsTable = sqliteTable("sessions", {
   id: text("id").primaryKey(),
   expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
   token: text("token").notNull().unique(),
+  selectedFileId: text("selectedFileId").unique(),
   createdAt: integer("createdAt", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).$onUpdate(() => sql`(unixepoch())`),
   ipAddress: text("ipAddress"),

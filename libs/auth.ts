@@ -53,6 +53,13 @@ export const auth = betterAuth({
     },
     session: {
         modelName: "sessionsTable",
+        additionalFields: {
+            selectedFileId: {
+                type: "string",
+                required: false,
+                input: false
+            }
+        }
     },
     account: {
         modelName: "accountsTable",
