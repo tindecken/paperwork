@@ -1,6 +1,6 @@
 // Add documents to paper work
 import { Elysia, t } from "elysia";
-import { userInfo } from "../../middlewares/sessionInfo";
+import { sessionInfo } from "../../middlewares/sessionInfo";
 import {
   documentsTable,
   paperworksTable,
@@ -23,12 +23,12 @@ const client = new S3Client({
 });
 
 export const addDocuments = (app: Elysia) =>
-  app.use(userInfo).post(
+  app.use(sessionInfo).post(
     "/upload",
-    async ({ body, userInfo }) => {
+    async ({ body, selectedFileId, user }) => {
       const isAdminRights = await isAdmin(
-        userInfo.userId,
-        userInfo.selectedFileId!
+        user.id,
+        selectedFileId!
       );
       if (!isAdminRights) {
         throw new Error("Forbidden");

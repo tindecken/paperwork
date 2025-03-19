@@ -174,7 +174,7 @@ export const getById = (app: Elysia) =>
   );
 
 export const getByIdReturnBlob = (app: Elysia) =>
-  app.use(userInfo).get(
+  app.use(sessionInfo).get(
     "/getreturnblob/:paperworkId",
     async ({ params: { paperworkId }, set }) => {
       const pw = await db
