@@ -4,7 +4,7 @@
 */
 
 import { Elysia, t } from 'elysia'
-import { userInfo } from '../../middlewares/userInfo'
+import { userInfo } from '../../middlewares/sessionInfo'
 import { isAdmin } from '../../libs/isAdmin'
 import { filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'

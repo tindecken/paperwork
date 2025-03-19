@@ -6,7 +6,7 @@
 */ 
 
 import { Elysia, t } from 'elysia'
-import { userInfo } from '../../middlewares/userInfo'
+import { userInfo } from '../../middlewares/sessionInfo'
 import { categoriesTable, filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';

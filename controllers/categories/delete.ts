@@ -3,7 +3,7 @@ import { categoriesTable, paperworksTable } from '../../drizzle/schema.ts'
 import { db } from '../../drizzle/index.ts'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface.ts';
 import {eq, and, ne} from "drizzle-orm"
-import {userInfo} from "../../middlewares/userInfo.ts";
+import {userInfo} from "../../middlewares/sessionInfo.ts";
 import { ulid } from 'ulid';
 import { paperworksCategories } from '../../drizzle/migrations/schema.ts';
 export const deleteCategory = (app: Elysia) =>

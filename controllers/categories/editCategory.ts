@@ -3,7 +3,7 @@ import { categoriesTable } from '../../drizzle/schema.ts'
 import { db } from '../../drizzle/index.ts'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface.ts';
 import {eq, and, ne} from "drizzle-orm"
-import {userInfo} from "../../middlewares/userInfo.ts";
+import {userInfo} from "../../middlewares/sessionInfo.ts";
 
 export const editCategory = (app: Elysia) =>
   app

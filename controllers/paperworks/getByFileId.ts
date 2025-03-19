@@ -11,7 +11,7 @@ import type { GenericResponseInterface } from "../../models/GenericResponseInter
 import { eq, and, count } from "drizzle-orm";
 import { S3Client, type S3File } from "bun";
 import { arrayBufferToBase64 } from "../../libs/libs";
-import { userInfo } from "../../middlewares/userInfo.ts";
+import { sessionInfo } from "../../middlewares/sessionInfo.ts";
 
 const client = new S3Client({
   accessKeyId: process.env["MINIO_ACCESSKEYID"],
@@ -20,15 +20,16 @@ const client = new S3Client({
   endpoint: process.env["MINIO_ENDPOINT"],
 });
 export const getByFileid = (app: Elysia) =>
-  app.use(userInfo).get(
+  app.use(sessionInfo).get(
     "/getPaperworks",
-    async ({ user, query }) => {
+    async ({ selectedFileId , query }) => {
+      console.log("getByFileid", selectedFileId);
       const categories = await db
         .select()
         .from(categoriesTable)
         .where(
           and(
-            eq(categoriesTable.fileId, '01J6E4K6SGQQ6JVMH1XW13ZR2W'),
+            eq(categoriesTable.fileId, selectedFileId),
             eq(categoriesTable.isDeleted, 0)
           )
         );

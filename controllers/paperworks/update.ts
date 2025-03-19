@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia'
-import { userInfo } from '../../middlewares/userInfo'
+import { userInfo } from '../../middlewares/sessionInfo.ts'
 import { paperworksTable } from '../../drizzle/schema.ts'
 import { db } from '../../drizzle'
 import {isAdmin} from "../../libs/isAdmin.ts";

@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { userInfo } from "../../middlewares/userInfo.ts";
+import { sessionInfo } from "../../middlewares/sessionInfo.ts";
 import {
   documentsTable,
   paperworksCategoriesTable,
@@ -11,7 +11,7 @@ import { eq } from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 
 export const deletePaperWork = (app: Elysia) =>
-  app.use(userInfo).delete(
+  app.use(sessionInfo).delete(
     "/delete/:paperworkId",
     async ({ params: { paperworkId }, userInfo, set }) => {
       const paperWork = await db

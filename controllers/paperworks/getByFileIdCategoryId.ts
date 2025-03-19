@@ -5,7 +5,7 @@ import type { GenericResponseInterface } from '../../models/GenericResponseInter
 import {eq, and, count } from "drizzle-orm"
 import { arrayBufferToBase64 } from '../../libs/libs';
 import { S3Client, type S3File } from 'bun';
-import { userInfo } from "../../middlewares/userInfo.ts";
+import { userInfo } from "../../middlewares/sessionInfo.ts";
 
 const client = new S3Client({
   accessKeyId: process.env["MINIO_ACCESSKEYID"],

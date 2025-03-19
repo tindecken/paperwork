@@ -11,7 +11,7 @@ import { categoriesController } from "./controllers/categories";
 import type { InsertLog } from "./drizzle/schema.ts";
 import { ulid } from "ulid";
 import { log } from "./libs/logging.ts";
-import { userInfo } from "./middlewares/userInfo";
+import { userInfo } from "./middlewares/sessionInfo.ts";
 
 const listenPort = 3001
 const tls = (process.env.NODE_ENV === 'production') ? {

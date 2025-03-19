@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { userInfo } from "../../middlewares/userInfo";
+import { sessionInfo } from "../../middlewares/sessionInfo.ts";
 import {
   documentsTable,
   paperworksTable,

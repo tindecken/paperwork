@@ -9,7 +9,7 @@ import {
 import { db } from "../../drizzle";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 import { eq, and, ne } from "drizzle-orm";
-import { userInfo } from "../../middlewares/userInfo.ts";
+import { sessionInfo } from "../../middlewares/sessionInfo.ts";
 import type { PaperworkDetails } from "../../models/PaperworkDetails.ts";
 import { S3Client, type S3File } from "bun";
 import { arrayBufferToBase64 } from "../../libs/libs.ts";
@@ -21,7 +21,7 @@ const client = new S3Client({
   endpoint: process.env["MINIO_ENDPOINT"],
 });
 export const getById = (app: Elysia) =>
-  app.use(userInfo).get(
+  app.use(sessionInfo).get(
     "/get/:paperworkId",
     async ({ params: { paperworkId }, set }) => {
       const pw = await db
@@ -159,6 +159,7 @@ export const getById = (app: Elysia) =>
       return res;
     },
     {
+      auth: true,
       query: t.Object({
         pageNumber: t.Optional(t.Number()),
         pageSize: t.Optional(t.Number()),

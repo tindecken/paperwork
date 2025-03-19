@@ -1,6 +1,6 @@
 // Add documents to paper work
 import { Elysia, t } from "elysia";
-import { userInfo } from "../../middlewares/userInfo";
+import { userInfo } from "../../middlewares/sessionInfo";
 import {
   documentsTable,
   paperworksTable,

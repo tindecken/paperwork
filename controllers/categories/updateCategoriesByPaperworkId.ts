@@ -8,7 +8,7 @@ import {
 import { db } from "../../drizzle/index.ts";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 import { eq, sql, and, ne } from "drizzle-orm";
-import { userInfo } from "../../middlewares/userInfo.ts";
+import { userInfo } from "../../middlewares/sessionInfo.ts";
 import { ulid } from "ulid";
 
 export const updateCategoriesByPaperworkId = (app: Elysia) =>

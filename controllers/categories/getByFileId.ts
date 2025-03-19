@@ -3,7 +3,7 @@ import {categoriesTable, paperworksCategoriesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import {eq, and, ne } from "drizzle-orm"
-import {userInfo} from "../../middlewares/userInfo.ts";
+import {userInfo} from "../../middlewares/sessionInfo.ts";
 
 export const getCategoriesByFileId = (app: Elysia) =>
   app
