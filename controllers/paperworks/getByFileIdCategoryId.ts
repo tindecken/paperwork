@@ -3,9 +3,9 @@ import {categoriesTable, documentsTable, paperworksCategoriesTable, paperworksTa
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import {eq, and, count } from "drizzle-orm"
-import {userInfo} from "../../middlewares/userInfo.ts";
 import { arrayBufferToBase64 } from '../../libs/libs';
 import { S3Client, type S3File } from 'bun';
+import { userInfo } from "../../middlewares/userInfo.ts";
 
 const client = new S3Client({
   accessKeyId: process.env["MINIO_ACCESSKEYID"],
@@ -53,21 +53,21 @@ export const getByCategoryId = (app: Elysia) =>
         })
         let ppws = Array.from(paperworkMap.values());
         // filter
-        if (query.filterValue) {
-          ppws = ppws.filter((p) => p.name.toLowerCase().includes(query.filterValue!.toLowerCase()) 
-          || (p.description && p.description.toLowerCase().includes(query.filterValue!.toLowerCase())) 
-          || (p.price && p.price.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.priceCurrency && p.priceCurrency.toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.issuedAt && p.issuedAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query.filterValue!.toLowerCase()))
-          || (p.categories.some((c) => c.toLowerCase().includes(query.filterValue!.toLowerCase()))));
+        if (query['filterValue']) {
+          ppws = ppws.filter((p) => p.name.toLowerCase().includes(query['filterValue']!.toLowerCase()) 
+          || (p.description && p.description.toLowerCase().includes(query['filterValue']!.toLowerCase())) 
+          || (p.price && p.price.toString().toLowerCase().includes(query['filterValue']!.toLowerCase()))
+          || (p.priceCurrency && p.priceCurrency.toLowerCase().includes(query['filterValue']!.toLowerCase()))
+          || (p.issuedAt && p.issuedAt.toString().toLowerCase().includes(query['filterValue']!.toLowerCase()))
+          || (p.createdAt && p.createdAt.toString().toLowerCase().includes(query['filterValue']!.toLowerCase()))
+          || (p.categories.some((c) => c.toLowerCase().includes(query['filterValue']!.toLowerCase()))));
         }
         const totalCount = ppws.length;
         // sort
-        if (query.sortField && query.sortDirection) {
+        if (query['sortField'] && query['sortDirection']) {
           ppws.sort((a, b) => {
-            const sortField = query.sortField as keyof SelectPaperworkWithCategory;
-            if (query.sortDirection === 'asc') {
+            const sortField = query['sortField'] as keyof SelectPaperworkWithCategory;
+            if (query['sortDirection'] === 'asc') {
               return a[sortField]! > b[sortField]! ? 1 : -1;
             } else {
               return a[sortField]! < b[sortField]! ? 1 : -1;
@@ -80,9 +80,13 @@ export const getByCategoryId = (app: Elysia) =>
           });
         }
         // limit
-        if (query.pageNumber && query.pageSize) {
-          ppws = ppws.slice((query.pageNumber - 1) * query.pageSize, query.pageNumber * query.pageSize)
+        // limit
+        if (query['pageNumber'] && query['pageSize']) {
+          const pageNumber = Number(query['pageNumber']);
+          const pageSize = Number(query['pageSize']);
+          ppws = ppws.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
         }
+
         
         // get covers for paperworks
         await Promise.all(

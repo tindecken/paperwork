@@ -1,31 +1,23 @@
 import { Elysia } from "elysia";
-import * as jose from 'jose'
-import { bearer } from '@elysiajs/bearer'
-import type { TokenInterface } from "../models/TokenInterface";
+import { auth } from "../libs/auth.ts";
+// user middleware (compute user and session and pass to routes)
+const userInfo = new Elysia()
+  .mount(auth.handler)
+  .macro({
+    auth: {
+      async resolve({ error, request: { headers } }) {
+        const session = await auth.api.getSession({
+          headers,
+        });
+        console.log('session', session)
+        if (!session) return error(401);
+        // get selectedFileId 
+        return {
+          user: session["user"],
+          session: session["session"],
+        };
+      },
+    },
+  });
 
-
-// This is a middleware that will be used to get the user info from the token, 
-// aslo it will be used to check if the token is expired or not
-export const userInfo = (app: Elysia) => 
-    app
-    .use(bearer())
-    .derive(async ({bearer, set}) => {
-        if (bearer == undefined) {
-            set.status = 401
-            throw new Error("Bearer not found")
-        }
-        let jwtDecoded: any = null
-        try {
-            jwtDecoded = await jose.jwtVerify(bearer, new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
-        } catch (error) {
-        }
-        if (jwtDecoded != null) {
-            const userInfo: TokenInterface = jwtDecoded.payload
-            return {
-                userInfo
-            }
-        }
-        set.status = 401
-        throw new Error("Unauthorized")
-    })
-
+export { userInfo };

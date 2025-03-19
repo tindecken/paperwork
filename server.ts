@@ -1,7 +1,6 @@
 import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
-import { authen } from './controllers/auth/authen'
 import { filesController } from './controllers/files'
 import { themesController } from './controllers/themes'
 import { cookie } from "@elysiajs/cookie";
@@ -12,8 +11,7 @@ import { categoriesController } from "./controllers/categories";
 import type { InsertLog } from "./drizzle/schema.ts";
 import { ulid } from "ulid";
 import { log } from "./libs/logging.ts";
-import { betterAuth } from "./middlewares/betterAuth";
-import { auth } from './libs/auth.ts'
+import { userInfo } from "./middlewares/userInfo";
 
 const listenPort = 3001
 const tls = (process.env.NODE_ENV === 'production') ? {
@@ -22,7 +20,7 @@ const tls = (process.env.NODE_ENV === 'production') ? {
 }: {}
 const encoder = new TextEncoder()
 new Elysia()
-    .use(betterAuth)
+    .use(userInfo)
     .use(swagger())
     .use(cors({
         origin: [/.*\.onrender\.com$/, /.*\.netlify\.app$/, /.*\.tindecken\.xyz$/, 'tindecken.xyz', 'localhost', 'localhost:1000', /.*\.duckdns\.org$/]

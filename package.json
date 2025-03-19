@@ -15,7 +15,7 @@
   },
   "type": "module",
   "devDependencies": {
-    "better-sqlite3": "^11.9.0",
+    "better-sqlite3": "^11.9.1",
     "drizzle-kit": "^0.30.5"
   },
   "peerDependencies": {
@@ -39,7 +39,7 @@
     "jose": "^5.10.0",
     "postgres": "^3.4.5",
     "sharp": "^0.33.5",
-    "ulid": "^2.3.0"
+    "ulid": "^2.4.0"
   },
   "overrides": {
     "bun-types": "^1.1.43-canary.20250108T140520"

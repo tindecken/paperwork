@@ -9,9 +9,9 @@ import {
 import { db } from "../../drizzle";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 import { eq, and, count } from "drizzle-orm";
-import { userInfo } from "../../middlewares/userInfo.ts";
 import { S3Client, type S3File } from "bun";
 import { arrayBufferToBase64 } from "../../libs/libs";
+import { userInfo } from "../../middlewares/userInfo.ts";
 
 const client = new S3Client({
   accessKeyId: process.env["MINIO_ACCESSKEYID"],
@@ -22,13 +22,13 @@ const client = new S3Client({
 export const getByFileid = (app: Elysia) =>
   app.use(userInfo).get(
     "/getPaperworks",
-    async ({ userInfo, query }) => {
+    async ({ user, query }) => {
       const categories = await db
         .select()
         .from(categoriesTable)
         .where(
           and(
-            eq(categoriesTable.fileId, userInfo.selectedFileId!),
+            eq(categoriesTable.fileId, '01J6E4K6SGQQ6JVMH1XW13ZR2W'),
             eq(categoriesTable.isDeleted, 0)
           )
         );
@@ -68,45 +68,45 @@ export const getByFileid = (app: Elysia) =>
       );
       let ppws = Array.from(paperworkMap.values());
       // filter
-      if (query.filterValue) {
+      if (query["filterValue"]) {
         ppws = ppws.filter(
           (p) =>
-            p.name.toLowerCase().includes(query.filterValue!.toLowerCase()) ||
+            p.name.toLowerCase().includes(query["filterValue"]!.toLowerCase()) ||
             (p.description &&
               p.description
                 .toLowerCase()
-                .includes(query.filterValue!.toLowerCase())) ||
+                .includes(query["filterValue"]!.toLowerCase())) ||
             (p.price &&
               p.price
                 .toString()
                 .toLowerCase()
-                .includes(query.filterValue!.toLowerCase())) ||
+                .includes(query["filterValue"]!.toLowerCase())) ||
             (p.priceCurrency &&
               p.priceCurrency
                 .toLowerCase()
-                .includes(query.filterValue!.toLowerCase())) ||
+                .includes(query["filterValue"]!.toLowerCase())) ||
             (p.issuedAt &&
               p.issuedAt
                 .toString()
                 .toLowerCase()
-                .includes(query.filterValue!.toLowerCase())) ||
+                .includes(query["filterValue"]!.toLowerCase())) ||
             (p.createdAt &&
               p.createdAt
                 .toString()
                 .toLowerCase()
-                .includes(query.filterValue!.toLowerCase())) ||
+                .includes(query["filterValue"]!.toLowerCase())) ||
             p.categories.some((c) =>
-              c.toLowerCase().includes(query.filterValue!.toLowerCase())
+              c.toLowerCase().includes(query["filterValue"]!.toLowerCase())
             )
         );
       }
       const totalCount = ppws.length;
       // sort
-      if (query.sortField && query.sortDirection) {
+      if (query["sortField"] && query["sortDirection"]) {
         ppws.sort((a, b) => {
           const sortField =
-            query.sortField as keyof SelectPaperworkWithCategory;
-          if (query.sortDirection === "asc") {
+            query["sortField"] as keyof SelectPaperworkWithCategory;
+          if (query["sortDirection"] === "asc") {
             return a[sortField]! > b[sortField]! ? 1 : -1;
           } else {
             return a[sortField]! < b[sortField]! ? 1 : -1;
@@ -119,12 +119,14 @@ export const getByFileid = (app: Elysia) =>
         });
       }
       // limit
-      if (query.pageNumber && query.pageSize) {
+      // limit
+      if (query["pageNumber"] && query["pageSize"]) {
         ppws = ppws.slice(
-          (query.pageNumber - 1) * query.pageSize,
-          query.pageNumber * query.pageSize
+          (Number(query["pageNumber"]) - 1) * Number(query["pageSize"]),
+          Number(query["pageNumber"]) * Number(query["pageSize"])
         );
       }
+
 
       // get covers for paperworks
       await Promise.all(
@@ -178,6 +180,7 @@ export const getByFileid = (app: Elysia) =>
       return res;
     },
     {
+      auth: true,
       query: t.Object({
         pageNumber: t.Optional(t.Number()),
         pageSize: t.Optional(t.Number()),
@@ -185,5 +188,5 @@ export const getByFileid = (app: Elysia) =>
         sortDirection: t.Optional(t.TemplateLiteral("${asc|desc}")),
         filterValue: t.Optional(t.String()),
       }),
-    }
+    },
   );
