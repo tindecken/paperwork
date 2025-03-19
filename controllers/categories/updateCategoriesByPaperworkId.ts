@@ -8,11 +8,11 @@ import {
 import { db } from "../../drizzle/index.ts";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 import { eq, sql, and, ne } from "drizzle-orm";
-import { userInfo } from "../../middlewares/sessionInfo.ts";
+import { sessionInfo } from "../../middlewares/sessionInfo.ts";
 import { ulid } from "ulid";
 
 export const updateCategoriesByPaperworkId = (app: Elysia) =>
-  app.use(userInfo).put(
+  app.use(sessionInfo).put(
     "/updateCategories",
     async ({ userInfo, body, set }) => {
       // check paperworkId exist or not in table paperworks

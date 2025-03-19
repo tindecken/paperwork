@@ -6,7 +6,7 @@
 */ 
 
 import { Elysia, t } from 'elysia'
-import { userInfo } from '../../middlewares/sessionInfo'
+import { sessionInfo } from '../../middlewares/sessionInfo'
 import { categoriesTable, filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
@@ -15,7 +15,7 @@ import { ulid } from 'ulid'
 
 export const createFile = (app: Elysia) =>
     app
-    .use(userInfo)
+    .use(sessionInfo)
     .post('/create', async ({body, userInfo}) => {
         const newFile: typeof filesTable.$inferInsert = {
             id: ulid(),

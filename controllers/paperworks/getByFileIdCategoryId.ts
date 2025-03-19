@@ -5,7 +5,7 @@ import type { GenericResponseInterface } from '../../models/GenericResponseInter
 import {eq, and, count } from "drizzle-orm"
 import { arrayBufferToBase64 } from '../../libs/libs';
 import { S3Client, type S3File } from 'bun';
-import { userInfo } from "../../middlewares/sessionInfo.ts";
+import { sessionInfo } from "../../middlewares/sessionInfo.ts";
 
 const client = new S3Client({
   accessKeyId: process.env["MINIO_ACCESSKEYID"],
@@ -16,7 +16,7 @@ const client = new S3Client({
 
 export const getByCategoryId = (app: Elysia) =>
   app
-      .use(userInfo)
+      .use(sessionInfo)
       .get('/getPaperworks/:categoryId', async ({ params: {categoryId}, userInfo, query }) => {
         const category = await db.select().from(categoriesTable).where(
           and(

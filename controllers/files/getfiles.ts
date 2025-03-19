@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia'
-import { userInfo } from '../../middlewares/sessionInfo'
+import { sessionInfo } from '../../middlewares/sessionInfo'
 import { filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
@@ -8,7 +8,7 @@ import { eq, and, inArray } from "drizzle-orm";
 
 export const getFiles = (app: Elysia) =>
     app
-    .use(userInfo)
+    .use(sessionInfo)
         // get associated file by user
     .get('/getFiles', async ({ userInfo }) => {
         const usersFiles = await db.select().from(usersFilesTable).where(

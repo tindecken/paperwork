@@ -23,7 +23,7 @@ const client = new S3Client({
   endpoint: process.env["MINIO_ENDPOINT"],
 });
 export const createPaperWork = (app: Elysia) =>
-  app.use(userInfo).post(
+  app.use(sessionInfo).post(
     "/create",
     async ({ body, userInfo, set }) => {
       if (body.name.trim().length == 0) {

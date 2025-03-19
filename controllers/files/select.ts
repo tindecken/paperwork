@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia'
-import { userInfo } from '../../middlewares/sessionInfo'
+import { sessionInfo } from '../../middlewares/sessionInfo'
 import { usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
@@ -8,7 +8,7 @@ import { eq, and } from "drizzle-orm";
 
 export const selectFile = (app: Elysia) =>
     app
-    .use(userInfo)
+    .use(sessionInfo)
     .post('/selectFile', async ({body, userInfo}) => {
         const fileId = body.fileId
         const usersFiles = await db.select().from(usersFilesTable).where(

@@ -17,7 +17,7 @@ const sessionInfo = new Elysia()
   .mount(auth.handler)
   .macro({
     auth: {
-      async resolve({ error, request: { headers } }): Promise<AuthResult>  {
+      async resolve({ error, request: { headers } }): Promise<AuthResult | any>  {
         const session = await auth.api.getSession({
           headers,
         });

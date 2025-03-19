@@ -3,11 +3,11 @@ import {categoriesTable, paperworksCategoriesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
 import {eq, and, ne } from "drizzle-orm"
-import {userInfo} from "../../middlewares/sessionInfo.ts";
+import {sessionInfo} from "../../middlewares/sessionInfo.ts";
 
 export const getCategoriesByFileId = (app: Elysia) =>
   app
-      .use(userInfo)
+      .use(sessionInfo)
       .get('/getCategories', async ({ userInfo }) => {
         const categories = await db.select().from(categoriesTable).where(
             and(

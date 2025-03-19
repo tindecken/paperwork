@@ -1,13 +1,13 @@
 // remove documents from paper work
 import { Elysia, t } from "elysia";
-import { userInfo } from "../../middlewares/sessionInfo";
+import { sessionInfo } from "../../middlewares/sessionInfo";
 import {documentsTable, paperworksTable} from "../../drizzle/schema";
 import { db } from "../../drizzle";
 import {and, eq, sql} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 export const removeDocuments = (app: Elysia) =>
-  app.use(userInfo).delete(
+  app.use(sessionInfo).delete(
     "/remove",
     async ({ body, userInfo, set }) => {
       const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);

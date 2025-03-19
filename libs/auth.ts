@@ -13,6 +13,10 @@ export const auth = betterAuth({
         generateId() {
             return ulid()
         },
+        ipAddress: {
+			ipAddressHeaders: ["x-client-ip", "x-forwarded-for"],
+			disableIpTracking: false
+		},
     },
     trustedOrigins: [
         "http://localhost:3000",

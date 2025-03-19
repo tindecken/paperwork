@@ -1,6 +1,6 @@
 // remove documents from paper work
 import { Elysia, t } from "elysia";
-import { userInfo } from "../../middlewares/sessionInfo";
+import { sessionInfo } from "../../middlewares/sessionInfo";
 import { documentsTable } from "../../drizzle/schema";
 import { db } from "../../drizzle";
 import {and, eq} from "drizzle-orm";
@@ -16,7 +16,7 @@ const client = new S3Client({
 });
 
 export const download = (app: Elysia) =>
-  app.use(userInfo)
+  app.use(sessionInfo)
   .post("/download", async ({ body, set }) => {
     const documents = await db
     .select()

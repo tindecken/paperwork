@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia'
-import { userInfo } from '../../middlewares/sessionInfo.ts'
+import { sessionInfo } from '../../middlewares/sessionInfo.ts'
 import { paperworksTable } from '../../drizzle/schema.ts'
 import { db } from '../../drizzle'
 import {isAdmin} from "../../libs/isAdmin.ts";
@@ -9,7 +9,7 @@ import type { GenericResponseInterface } from "../../models/GenericResponseInter
 
 export const updatePaperWork = (app: Elysia) => {
   return app
-    .use(userInfo)
+    .use(sessionInfo)
     .put('/update/:paperworkId', async ({body, params: {paperworkId}, userInfo}) => {
       const paperWork = await db
         .select()

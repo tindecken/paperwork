@@ -1,6 +1,6 @@
 // remove documents from paper work
 import { Elysia, t } from "elysia";
-import { userInfo } from "../../middlewares/sessionInfo.ts";
+import { sessionInfo } from "../../middlewares/sessionInfo.ts";
 import {documentsTable, paperworksTable} from "../../drizzle/schema";
 import { db } from "../../drizzle";
 import {and, eq, sql} from "drizzle-orm";
@@ -17,7 +17,7 @@ const client = new S3Client({
   endpoint: process.env["MINIO_ENDPOINT"],
 });
 export const setCover = (app: Elysia) =>
-  app.use(userInfo)
+  app.use(sessionInfo)
 .post(
     "/setCover",
     async ({ body, userInfo, set }) => {

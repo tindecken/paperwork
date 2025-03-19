@@ -4,7 +4,7 @@
 */
 
 import { Elysia, t } from 'elysia'
-import { userInfo } from '../../middlewares/sessionInfo'
+import { sessionInfo } from '../../middlewares/sessionInfo'
 import { isAdmin } from '../../libs/isAdmin'
 import { filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
@@ -13,7 +13,7 @@ import type { GenericResponseInterface } from '../../models/GenericResponseInter
 
 export const deleteFile = (app: Elysia) =>
     app
-    .use(userInfo)
+    .use(sessionInfo)
     .delete('/delete/:id', async ({params: { id }, userInfo}) => {
         const isAdminRights = await isAdmin(userInfo.userId, id)
         if(!isAdminRights) {
