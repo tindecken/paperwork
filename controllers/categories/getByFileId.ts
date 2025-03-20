@@ -8,10 +8,11 @@ import {sessionInfo} from "../../middlewares/sessionInfo.ts";
 export const getCategoriesByFileId = (app: Elysia) =>
   app
       .use(sessionInfo)
-      .get('/getCategories', async ({ userInfo }) => {
+      .get('/getCategories', async ({ selectedFileId }) => {
+        console.log('selectedFileId', selectedFileId)
         const categories = await db.select().from(categoriesTable).where(
             and(
-              eq(categoriesTable.fileId, userInfo.selectedFileId!),
+              eq(categoriesTable.fileId, selectedFileId),
               eq(categoriesTable.isDeleted, 0),
               ne(categoriesTable.name, 'Uncategorized')
             )
@@ -36,4 +37,6 @@ export const getCategoriesByFileId = (app: Elysia) =>
           data: data
         }
         return res
+      }, {
+        auth: true
       });

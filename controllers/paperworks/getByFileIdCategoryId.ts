@@ -17,10 +17,10 @@ const client = new S3Client({
 export const getByCategoryId = (app: Elysia) =>
   app
       .use(sessionInfo)
-      .get('/getPaperworks/:categoryId', async ({ params: {categoryId}, userInfo, query }) => {
+      .get('/getPaperworks/:categoryId', async ({ params: {categoryId}, selectedFileId, query }) => {
         const category = await db.select().from(categoriesTable).where(
           and(
-            eq(categoriesTable.fileId, userInfo.selectedFileId!),
+            eq(categoriesTable.fileId, selectedFileId),
             eq(categoriesTable.id, categoryId),
             eq(categoriesTable.isDeleted, 0)
           )

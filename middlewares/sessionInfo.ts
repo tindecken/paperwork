@@ -18,7 +18,7 @@ const sessionInfo = new Elysia()
   .macro({
     auth: {
       async resolve({ error, request: { headers } }): Promise<AuthResult | any>  {
-        console.log('headers', headers)
+        console.log('headerssssssssss', headers)
         const session = await auth.api.getSession({
           headers,
         });
