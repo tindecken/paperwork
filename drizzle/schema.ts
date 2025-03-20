@@ -7,7 +7,6 @@ export const usersTable = sqliteTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   isEmailVerified: integer("isEmailVerified", { mode: "boolean" }).notNull(),
-  systemRole: text('systemRole').notNull().default('user'),
   userType: text('userType').notNull().default('free'),
   image: text("image"),
   avatar: text('avatar'),

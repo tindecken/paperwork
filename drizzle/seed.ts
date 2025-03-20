@@ -54,7 +54,6 @@ const user: InsertUser = {
   userName: 'tindecken',
   email: 'tindecken@gmail.com',
   password: await Bun.password.hash('rivaldo'),
-  systemRole: 'admin',
   avatar: '',
   themeId: theme1Id[0].id,
   isDeleted: 0,

@@ -48,7 +48,6 @@ export const createFile = (app: Elysia) =>
                 name: userInfo.name,
                 userName: userInfo.userName,
                 email: userInfo.email,
-                systemRole: userInfo.systemRole,
                 selectedFileId: createdfile[0].id,
                 role: newUserFile.role,
                 maxEpx: Date.now() + 60 * 60 * 20000

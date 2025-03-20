@@ -3,7 +3,6 @@ export interface TokenInterface {
     name: string
     userName: string
     email: string
-    systemRole: string
     selectedFileId: string | null
     role: string | null
     maxEpx: number

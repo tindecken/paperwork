@@ -2,8 +2,6 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "../drizzle/index"; // your drizzle instance
 import { ulid } from "ulid";
-import { sql } from 'drizzle-orm';
-import { accountsTable, sessionsTable, usersTable, verificationsTable } from "../drizzle/schema";
  
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -30,12 +28,6 @@ export const auth = betterAuth({
             emailVerified: "isEmailVerified",
         },
         additionalFields: {
-            systemRole: {
-                type: "string",
-                required: true,
-                defaultValue: "user",
-                input: false
-            },
             userType: {
                 type: "string",
                 required: true,
