@@ -25,7 +25,7 @@ const client = new S3Client({
 export const createPaperWork = (app: Elysia) =>
   app.use(sessionInfo).post(
     "/create",
-    async ({ body, userInfo, set }) => {
+    async ({ body, user, selectedFileId, set }) => {
       if (body.name.trim().length == 0) {
         set.status = 400;
         throw new Error("Name is required!");
@@ -39,8 +39,8 @@ export const createPaperWork = (app: Elysia) =>
         }
       }
       const isAdminRights = await isAdmin(
-        userInfo.userId,
-        userInfo.selectedFileId!
+        user.id,
+        selectedFileId
       );
       if (!isAdminRights) {
         throw new Error("Forbidden");
@@ -59,71 +59,79 @@ export const createPaperWork = (app: Elysia) =>
         }
       }
       const ppwULID = ulid();
-      await db.transaction(async (tx) => {
-        const ppw: InsertPaperwork = {
-          id: ppwULID,
-          name: body.name.trim(),
-          description: body.description,
-          issuedAt: body.issueAt,
-          price: body.price ? parseFloat(body.price) : null,
-          priceCurrency: body.priceCurrency,
-          createdBy: userInfo.userName,
-        };
-        const insertedPaperWork = await tx
-          .insert(paperworksTable)
-          .values(ppw)
-          .returning();
-        // create paperwork-category relationship with category Uncategorized
-        const uncategorizedCategory = await db.query.categoriesTable.findFirst({
-          where: and(
-              eq(categoriesTable.name, "Uncategorized"),
-              eq(categoriesTable.fileId, userInfo.selectedFileId!),
-            )
-        });
-        if (!uncategorizedCategory) {
-          throw new Error("Category Uncategorized not found!");
-        }
-        const uncategorizedPwc: typeof paperworksCategoriesTable.$inferInsert = {
+      
+      // Insert paperwork
+      const ppw: InsertPaperwork = {
+        id: ppwULID,
+        name: body.name.trim(),
+        description: body.description,
+        issuedAt: body.issueAt,
+        price: body.price ? parseFloat(body.price) : null,
+        priceCurrency: body.priceCurrency,
+        createdBy: user.name,
+      };
+      const insertedPaperWork = await db
+        .insert(paperworksTable)
+        .values(ppw)
+        .returning();
+
+      // Handle uncategorized category
+      const uncategorizedCategory = await db.query.categoriesTable.findFirst({
+        where: and(
+          eq(categoriesTable.name, "Uncategorized"),
+          eq(categoriesTable.fileId, selectedFileId),
+        )
+      });
+      
+      if (!uncategorizedCategory) {
+        throw new Error("Category Uncategorized not found!");
+      }
+
+      // Insert uncategorized relationship
+      const uncategorizedPwc: typeof paperworksCategoriesTable.$inferInsert = {
+        id: ulid(),
+        paperworkId: insertedPaperWork[0].id,
+        categoryId: uncategorizedCategory.id,
+        createdBy: user.name,
+      };
+      await db.insert(paperworksCategoriesTable).values(uncategorizedPwc);
+
+      // Insert selected category relationship if provided
+      if (body.categoryId !== '') {
+        const pwc: typeof paperworksCategoriesTable.$inferInsert = {
           id: ulid(),
           paperworkId: insertedPaperWork[0].id,
-          categoryId: uncategorizedCategory.id,
-          createdBy: userInfo.userName,
+          categoryId: body.categoryId,
+          createdBy: user.name,
         };
-        await tx.insert(paperworksCategoriesTable).values(uncategorizedPwc).returning();
-        // create paperwork-category relationship
-        if (body.categoryId !== '') {
-          const pwc: typeof paperworksCategoriesTable.$inferInsert = {
+        await db.insert(paperworksCategoriesTable).values(pwc);
+      }
+
+      // Handle file uploads
+      if (body.files) {
+        for (const file of body.files) {
+          const fileArrayBuffer = await file.arrayBuffer();
+          if (fileArrayBuffer.byteLength === 0) {
+            throw new Error(`File ${file.name} is empty!`);
+          }
+
+          const filePath = `${selectedFileId}\\${insertedPaperWork[0].id}\\${file.name}`;
+          const document: typeof documentsTable.$inferInsert = {
             id: ulid(),
             paperworkId: insertedPaperWork[0].id,
-            categoryId: body.categoryId,
-            createdBy: userInfo.userName,
+            fileSize: file.size,
+            fileName: file.name,
+            filePath: filePath,
+            isDeleted: 0,
+            createdBy: user.name,
           };
-          await tx.insert(paperworksCategoriesTable).values(pwc).returning();
+          await db.insert(documentsTable).values(document);
+          
+          const s3File: S3File = client.file(filePath);
+          await s3File.write(fileArrayBuffer);
         }
-        // create documents for uploaded files
-        if (body.files) {
-          for (const file of body.files) {
-            const fileArrayBuffer = await file.arrayBuffer();
-            if (fileArrayBuffer.byteLength === 0)
-              throw new Error(`File ${file.name} is empty!`);
-            // upload file to S3
-            const filePath = `${userInfo.selectedFileId}\\${insertedPaperWork[0].id}\\${file.name}`;
-            const document: typeof documentsTable.$inferInsert = {
-              id: ulid(),
-              paperworkId: insertedPaperWork[0].id,
-              fileSize: file.size,
-              fileName: file.name,
-              filePath: filePath,
-              isDeleted: 0,
-              createdBy: userInfo.userName,
-            };
-            await tx.insert(documentsTable).values(document).returning();
-            const s3File: S3File = client.file(filePath);
-            await s3File.write(fileArrayBuffer);
-            
-          }
-        }
-      });
+      }
+
       // Set cover for the paperwork and reduce size of images
       const documents = await db
         .select()
@@ -148,7 +156,7 @@ export const createPaperWork = (app: Elysia) =>
               0,
               documentImages[0].fileName.lastIndexOf(".")
             )}_cover.jpg`;
-            const coverFilePath = `${userInfo.selectedFileId}\\${ppwULID}\\${coverFileName}`;
+            const coverFilePath = `${selectedFileId}\\${ppwULID}\\${coverFileName}`;
             const s3File: S3File = client.file(coverFilePath);
             await s3File.write(arrayBuffer);
             await db
@@ -174,7 +182,7 @@ export const createPaperWork = (app: Elysia) =>
               image.fileName.lastIndexOf(".") + 1
             );
             const reducedFileName = `${fileWithoutExtension}_reduced.${fileExtension}`;
-            const reducedFilePath = `${userInfo.selectedFileId}\\${ppwULID}\\${reducedFileName}`;
+            const reducedFilePath = `${selectedFileId}\\${ppwULID}\\${reducedFileName}`;
             const s3File: S3File = client.file(reducedFilePath);
             await s3File.write(arrayBuffer, { type: "image/jpeg" });
             const reducedImageFileSize = arrayBuffer.byteLength;
@@ -195,6 +203,7 @@ export const createPaperWork = (app: Elysia) =>
       return res;
     },
     {
+      auth: true,
       body: t.Object({
         files: t.Optional(t.Files()),
         categoryId: t.String(),

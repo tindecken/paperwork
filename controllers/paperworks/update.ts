@@ -10,7 +10,7 @@ import type { GenericResponseInterface } from "../../models/GenericResponseInter
 export const updatePaperWork = (app: Elysia) => {
   return app
     .use(sessionInfo)
-    .put('/update/:paperworkId', async ({body, params: {paperworkId}, userInfo}) => {
+    .put('/update/:paperworkId', async ({body, params: {paperworkId}, user, selectedFileId}) => {
       const paperWork = await db
         .select()
         .from(paperworksTable)
@@ -20,7 +20,7 @@ export const updatePaperWork = (app: Elysia) => {
       if (paperWork.length === 0) {
         throw new Error("Paper work not found")
       }
-      const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!)
+      const isAdminRights = await isAdmin(user.id, selectedFileId)
       if (!isAdminRights) {
         throw new Error("Forbidden")
       }
@@ -33,7 +33,7 @@ export const updatePaperWork = (app: Elysia) => {
           price: body.price,
           priceCurrency: body.priceCurrency,
           updatedAt: sql`CURRENT_TIMESTAMP`,
-          updatedBy: userInfo.userName
+          updatedBy: user.name
         })
         .where(eq(paperworksTable.id, paperworkId))
         .returning()
@@ -44,6 +44,7 @@ export const updatePaperWork = (app: Elysia) => {
       }
       return res
     }, {
+      auth: true,
       body: t.Object({
         name: t.Optional(t.String()),
         description: t.Optional(t.String()),

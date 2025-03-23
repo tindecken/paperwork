@@ -13,7 +13,9 @@ import type { GenericResponseInterface } from "../../models/GenericResponseInter
 export const deletePaperWork = (app: Elysia) =>
   app.use(sessionInfo).delete(
     "/delete/:paperworkId",
-    async ({ params: { paperworkId }, userInfo, set }) => {
+    async ({ params: { paperworkId }, selectedFileId, user, set }) => {
+      console.log('selectedFileId', selectedFileId)
+      console.log('user', user)
       const paperWork = await db
         .select()
         .from(paperworksTable)
@@ -22,8 +24,8 @@ export const deletePaperWork = (app: Elysia) =>
         throw new Error("Paper work not found");
       }
       const isAdminRights = await isAdmin(
-        userInfo.userId,
-        userInfo.selectedFileId!
+        user.id,
+        selectedFileId
       );
       if (!isAdminRights) {
         set.status = 403;
@@ -59,6 +61,7 @@ export const deletePaperWork = (app: Elysia) =>
       return res;
     },
     {
+      auth: true,
       params: t.Object({
         paperworkId: t.String({ minLength: 26, maxLength: 26 }),
       }),

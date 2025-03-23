@@ -1,0 +1,1 @@
+ALTER TABLE `usersFiles` ADD `createdBy` text;

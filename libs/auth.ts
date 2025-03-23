@@ -41,7 +41,7 @@ export const auth = betterAuth({
             },
             isDeleted: {
                 type: "number",
-                required: true,
+                required: false,
                 defaultValue: 0,
                 input: false
             },

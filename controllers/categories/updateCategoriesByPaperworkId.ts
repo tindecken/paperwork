@@ -14,7 +14,7 @@ import { ulid } from "ulid";
 export const updateCategoriesByPaperworkId = (app: Elysia) =>
   app.use(sessionInfo).put(
     "/updateCategories",
-    async ({ userInfo, body, set }) => {
+    async ({ user, selectedFileId, body, set }) => {
       // check paperworkId exist or not in table paperworks
       const existingPaperwork = await db
         .select()
@@ -36,7 +36,7 @@ export const updateCategoriesByPaperworkId = (app: Elysia) =>
         .where(
           and(
             eq(categoriesTable.name, "Uncategorized"),
-            eq(categoriesTable.fileId, userInfo.selectedFileId!)
+            eq(categoriesTable.fileId, selectedFileId)
           )
         );
       // check Uncategorized category exist or not
@@ -62,12 +62,12 @@ export const updateCategoriesByPaperworkId = (app: Elysia) =>
         );
       // re-add the paperwork categories
       await Promise.all(
-        body.categoryIds.map(async (categoryId) => {
+        body.categoryIds.map(async (categoryId: string) => {
           const paperworkCategory: InsertPaperworksCategories = {
             id: ulid(),
             paperworkId: body.paperworkId,
             categoryId,
-            createdBy: userInfo.userName,
+            createdBy: user.name,
             isDeleted: 0,
           };
           await db.insert(paperworksCategoriesTable).values(paperworkCategory);
@@ -78,7 +78,7 @@ export const updateCategoriesByPaperworkId = (app: Elysia) =>
         .update(paperworksTable)
         .set({
           updatedAt: sql`(CURRENT_TIMESTAMP)`,
-          updatedBy: userInfo.userName,
+          updatedBy: user.name,
         })
         .where(eq(paperworksTable.id, body.paperworkId));
 
@@ -91,6 +91,7 @@ export const updateCategoriesByPaperworkId = (app: Elysia) =>
       return res;
     },
     {
+      auth: true,
       body: t.Object({
         paperworkId: t.String(),
         categoryIds: t.Array(t.String()),

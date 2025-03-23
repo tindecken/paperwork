@@ -18,6 +18,7 @@ export const getByCategoryId = (app: Elysia) =>
   app
       .use(sessionInfo)
       .get('/getPaperworks/:categoryId', async ({ params: {categoryId}, selectedFileId, query }) => {
+        console.log('selectedFileId', selectedFileId)
         const category = await db.select().from(categoriesTable).where(
           and(
             eq(categoriesTable.fileId, selectedFileId),
@@ -131,6 +132,7 @@ export const getByCategoryId = (app: Elysia) =>
         }
         return res
       }, {
+        auth: true,
         query: t.Object({
           pageNumber: t.Optional(t.Number()),
           pageSize: t.Optional(t.Number()),
