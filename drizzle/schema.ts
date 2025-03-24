@@ -17,12 +17,8 @@ export const usersTable = sqliteTable("users", {
   userType: text("userType").notNull().default("free"),
   image: text("image"),
   avatar: text("avatar"),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$onUpdate(
-    () => sql`(unixepoch())`
-  ),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
   isDeleted: integer("isDeleted").default(0),
 });
 
@@ -30,12 +26,8 @@ export const sessionsTable = sqliteTable("sessions", {
   id: text("id").primaryKey(),
   expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
   token: text("token").notNull().unique(),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$onUpdate(
-    () => sql`(unixepoch())`
-  ),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
   ipAddress: text("ipAddress"),
   userAgent: text("userAgent"),
   userId: text("userId")
@@ -61,12 +53,8 @@ export const accountsTable = sqliteTable("accounts", {
   }),
   scope: text("scope"),
   password: text("password"),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$onUpdate(
-    () => sql`(unixepoch())`
-  ),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
 });
 
 export const verificationsTable = sqliteTable("verifications", {
@@ -74,12 +62,8 @@ export const verificationsTable = sqliteTable("verifications", {
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp" }).default(
-    sql`(unixepoch())`
-  ),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).$onUpdate(
-    () => sql`(unixepoch())`
-  ),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
 });
 
 // End -- betterAuth schema --
