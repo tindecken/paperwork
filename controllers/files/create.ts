@@ -10,18 +10,17 @@ import { sessionInfo } from '../../middlewares/sessionInfo'
 import { categoriesTable, filesTable, usersFilesTable } from '../../drizzle/schema'
 import { db } from '../../drizzle'
 import type { GenericResponseInterface } from '../../models/GenericResponseInterface';
-import * as jose from 'jose'
 import { ulid } from 'ulid'
 
 export const createFile = (app: Elysia) =>
     app
     .use(sessionInfo)
-    .post('/create', async ({body, userInfo}) => {
+    .post('/create', async ({body, user }) => {
         const newFile: typeof filesTable.$inferInsert = {
             id: ulid(),
             name: body.name,
             description: body.description,
-            createdBy: userInfo.userName
+            createdBy: user.name
         }
         const createdfile = await db
             .insert(filesTable)
@@ -29,11 +28,11 @@ export const createFile = (app: Elysia) =>
             .returning()
         const newUserFile: typeof usersFilesTable.$inferInsert = {
             id: ulid(),
-            userId: userInfo.userId,
+            userId: user.id,
             fileId: createdfile[0].id,
             role: 'admin',
             isSelected: 1,
-            createdBy: userInfo.userName
+            createdBy: user.name
         }
         await db.insert(usersFilesTable).values(newUserFile)
         // create new Uncategory for the file
@@ -42,28 +41,15 @@ export const createFile = (app: Elysia) =>
             fileId: createdfile[0].id,
             name: 'Uncategorized'
         })
-        const alg = process.env["JWT_ALGORITHM"] || 'HS256'
-            const token = await new jose.SignJWT({
-                userId: userInfo.userId,
-                name: userInfo.name,
-                userName: userInfo.userName,
-                email: userInfo.email,
-                selectedFileId: createdfile[0].id,
-                role: newUserFile.role,
-                maxEpx: Date.now() + 60 * 60 * 20000
-            })
-                .setProtectedHeader({alg})
-                .setIssuedAt()
-                .setExpirationTime('24h')
-                .sign(new TextEncoder().encode(Bun.env["JWT_SECRET"]!))
 
         const res: GenericResponseInterface = {
             success: true,
             message: `Created file ${createdfile[0].name} successfully!`,
-            data: { token, file: createdfile[0] }
+            data: createdfile[0]
         }
         return res
     }, {
+        auth: true,
         body: t.Object({
             name: t.String(),
             description: t.Optional(t.String())
