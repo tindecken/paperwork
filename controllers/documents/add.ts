@@ -51,7 +51,7 @@ export const addDocuments = (app: Elysia) =>
       const fileArrayBuffer = await body.file.arrayBuffer();
       if (fileArrayBuffer.byteLength === 0)
         throw new Error(`File ${body.file.name} is empty!`);
-      const filePath = `${userInfo.selectedFileId}\\${body.paperworkId}\\${body.file.name}`;
+      const filePath = `${user.selectedFileId}\\${body.paperworkId}\\${body.file.name}`;
       const s3File: S3File = client.file(filePath);
       await s3File.write(fileArrayBuffer);
       const newDocument: InsertDocument = {
@@ -61,7 +61,7 @@ export const addDocuments = (app: Elysia) =>
         fileName: body.file.name,
         filePath: filePath,
         isDeleted: 0,
-        createdBy: userInfo.userName,
+        createdBy: user.name,
       };
       await db.insert(documentsTable).values(newDocument);
       // check if file is an image, then reduce size
@@ -73,7 +73,7 @@ export const addDocuments = (app: Elysia) =>
         body.file.name.lastIndexOf(".") + 1
       );
       const reducedFileName = `${fileWithoutExtension}_reduced.${fileExtension}`;
-      const reducedFilePath = `${userInfo.selectedFileId}\\${body.paperworkId}\\${reducedFileName}`;
+      const reducedFilePath = `${user.selectedFileId}\\${body.paperworkId}\\${reducedFileName}`;
       if (IMAGE_FILE_TYPE.includes(fileExtension.toLowerCase())) {
         await sharp(fileArrayBuffer)
           .jpeg({ quality: 50 })
@@ -106,7 +106,7 @@ export const addDocuments = (app: Elysia) =>
                 0,
                 body.file.name.lastIndexOf(".")
               )}_cover.jpg`;
-              const coverFilePath = `${userInfo.selectedFileId}\\${body.paperworkId}\\${coverFileName}`;
+              const coverFilePath = `${user.selectedFileId}\\${body.paperworkId}\\${coverFileName}`;
               const s3File: S3File = client.file(coverFilePath);
               await s3File.write(arrayBuffer);
               await db
@@ -121,7 +121,7 @@ export const addDocuments = (app: Elysia) =>
         .update(paperworksTable)
         .set({
           updatedAt: sql`(CURRENT_TIMESTAMP)`,
-          updatedBy: userInfo.userName,
+          updatedBy: user.name,
         })
         .where(eq(paperworksTable.id, body.paperworkId));
       const res: GenericResponseInterface = {
@@ -132,6 +132,7 @@ export const addDocuments = (app: Elysia) =>
       return res;
     },
     {
+      auth: true,
       body: t.Object({
         file: t.File(),
         paperworkId: t.String(),
