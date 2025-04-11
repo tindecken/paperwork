@@ -9,8 +9,8 @@ import type { GenericResponseInterface } from "../../models/GenericResponseInter
 export const removeDocuments = (app: Elysia) =>
   app.use(sessionInfo).delete(
     "/remove",
-    async ({ body, userInfo, set }) => {
-      const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);
+    async ({ body, user, selectedFileId, set }) => {
+      const isAdminRights = await isAdmin(user.id, selectedFileId);
       if (!isAdminRights) {
         set.status = 403;
         const res: GenericResponseInterface = {
@@ -47,7 +47,7 @@ export const removeDocuments = (app: Elysia) =>
       // update paperwork updatedAt and updatedBy
       await db.update(paperworksTable).set({
         updatedAt: sql`(CURRENT_TIMESTAMP)`,
-        updatedBy: userInfo.userName
+        updatedBy: user.name
       }).where(eq(paperworksTable.id, body.paperworkId))
       const res: GenericResponseInterface = {
         success: true,
@@ -57,6 +57,8 @@ export const removeDocuments = (app: Elysia) =>
       return res;
     },
     {
+      
+      
       body: t.Object({
         paperworkId: t.String(),
         documentId: t.String(),

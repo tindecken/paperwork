@@ -49,3 +49,4 @@ export const verificationsTable = sqliteTable("verifications_table", {
  createdAt: integer('created_at', { mode: 'timestamp' }),
  updatedAt: integer('updated_at', { mode: 'timestamp' })
 				});
+                                  

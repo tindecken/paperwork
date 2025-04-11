@@ -7,7 +7,6 @@ import {and, eq, sql} from "drizzle-orm";
 import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 import sharp from 'sharp'
-import { IMAGE_FILE_TYPE } from '../constants/imageType.ts';
 import { S3Client, type S3File } from "bun";
 
 const client = new S3Client({
@@ -20,8 +19,8 @@ export const setCover = (app: Elysia) =>
   app.use(sessionInfo)
 .post(
     "/setCover",
-    async ({ body, userInfo, set }) => {
-      const isAdminRights = await isAdmin(userInfo.userId, userInfo.selectedFileId!);
+    async ({ body, user, selectedFileId, set }) => {
+      const isAdminRights = await isAdmin(user.id, selectedFileId);
       if (!isAdminRights) {
           set.status = 403;
           const res: GenericResponseInterface = {
@@ -58,7 +57,7 @@ export const setCover = (app: Elysia) =>
 
       await sharp(arrayBuffer).resize(300, 300).jpeg({mozjpeg: true, quality: 80}).toBuffer().then(async (arrayBuffer: Buffer) => {
         const coverFileName = `${documentPaperwork[0].fileName.substring(0, documentPaperwork[0].fileName.lastIndexOf('.'))}_cover.jpg`;
-        const coverFilePath = `${userInfo.selectedFileId}\\${body.paperworkId}\\${coverFileName}`;
+        const coverFilePath = `${selectedFileId}\\${body.paperworkId}\\${coverFileName}`;
         const s3File: S3File = client.file(coverFilePath);
         await s3File.write(arrayBuffer);
         await db.update(documentsTable).set({isCover: 1, coverPath: coverFilePath}).where(eq(documentsTable.id, documentPaperwork[0].id))
@@ -66,7 +65,7 @@ export const setCover = (app: Elysia) =>
       // update paperwork updatedAt and updatedBy
       await db.update(paperworksTable).set({
         updatedAt: sql`(CURRENT_TIMESTAMP)`,
-        updatedBy: userInfo.userName
+        updatedBy: user.name
       }).where(eq(paperworksTable.id, body.paperworkId))
       const res: GenericResponseInterface = {
         success: true,
@@ -76,6 +75,7 @@ export const setCover = (app: Elysia) =>
       return res;
     },
     {
+      auth: true,
       body: t.Object({
         paperworkId: t.String(),
         documentId: t.String(),
