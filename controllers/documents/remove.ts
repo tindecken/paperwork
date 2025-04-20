@@ -57,8 +57,7 @@ export const removeDocuments = (app: Elysia) =>
       return res;
     },
     {
-      
-      
+      auth: true,
       body: t.Object({
         paperworkId: t.String(),
         documentId: t.String(),

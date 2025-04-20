@@ -12,6 +12,7 @@ import type { InsertLog } from "./drizzle/schema.ts";
 import { ulid } from "ulid";
 import { log } from "./libs/logging.ts";
 import { sessionInfo } from "./middlewares/sessionInfo.ts";
+import { testsController } from './controllers/test'
 
 const listenPort = 3001
 const tls = (process.env.NODE_ENV === 'production') ? {
@@ -41,6 +42,7 @@ new Elysia()
         .use(paperworksController)
         .use(categoriesController)
         .use(themesController)
+        .use(testsController)
         .mapResponse(({ response, set  }) => {
             const isJson = typeof response === 'object'
             const text = isJson

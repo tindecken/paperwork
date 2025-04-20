@@ -53,8 +53,9 @@ export const deleteCategory = (app: Elysia) =>
           }
           return res
       }, {
-          body: t.Object({
-              fileId: t.String(),
-              categoryId: t.String(),
-          })
+        auth: true,
+        body: t.Object({
+            fileId: t.String(),
+            categoryId: t.String(),
+        })
       });

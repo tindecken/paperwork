@@ -12,7 +12,7 @@ import type { GenericResponseInterface } from "../../models/GenericResponseInter
 import { isAdmin } from "../../libs/isAdmin";
 import { ulid } from "ulid";
 import sharp from "sharp";
-import { IMAGE_FILE_TYPE } from "../constants/imageType";
+import { IMAGE_FILE_TYPE } from "../../libs/constants/imageType";
 import { S3Client, type S3File } from "bun";
 
 const client = new S3Client({

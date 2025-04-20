@@ -56,6 +56,7 @@ export const editCategory = (app: Elysia) =>
           }
           return res
       }, {
+          auth: true,
           body: t.Object({
               fileId: t.String(),
               categoryId: t.String(),

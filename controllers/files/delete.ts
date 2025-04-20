@@ -29,15 +29,16 @@ export const deleteFile = (app: Elysia) =>
         await db.delete(usersFilesTable).where(eq(usersFilesTable.fileId, id))
         // inactive file
         await db.update(filesTable)
-          .set({ isDeleted: 1 })
-          .where(eq(filesTable.id, id))
+            .set({ isDeleted: 1 })
+            .where(eq(filesTable.id, id))
         const res: GenericResponseInterface = {
-          success: true,
-          message: `Delete file: ${file.name} successfully!`,
-          data: null
+            success: true,
+            message: `Delete file: ${file.name} successfully!`,
+            data: null
         }
         return res
     }, {
+        auth: true,
         params: t.Object({
             id: t.String()
         })
