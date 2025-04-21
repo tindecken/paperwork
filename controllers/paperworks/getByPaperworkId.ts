@@ -6,7 +6,7 @@ import {
   paperworksTable,
   type SelectCategory,
 } from "../../drizzle/schema.ts";
-import { db } from "../../drizzle";
+import { db } from "../../drizzle/index.ts";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 import { eq, and, ne } from "drizzle-orm";
 import { sessionInfo } from "../../middlewares/sessionInfo.ts";
@@ -124,9 +124,7 @@ export const getById = (app: Elysia) =>
               reducedImageDoc[0].reducedImageSizeFilePath!
             );
             const reduceImageBuffer = await s3CoverFile.arrayBuffer();
-            const reduceImageBufferUint8Array = new Uint8Array(
-              reduceImageBuffer
-            ); // Convert to Uint8Array for easy use in browser
+            const reduceImageBufferUint8Array = new Uint8Array(reduceImageBuffer); // Convert to Uint8Array for easy use in browser
 
             documentImagesWithImageBuffer.push({
               ...docImage,

@@ -12,6 +12,7 @@ import { eq, and, count } from "drizzle-orm";
 import { S3Client, type S3File } from "bun";
 import { arrayBufferToBase64 } from "../../libs/libs";
 import { sessionInfo } from "../../middlewares/sessionInfo.ts";
+import { redis } from "bun";
 
 const client = new S3Client({
   accessKeyId: process.env["MINIO_ACCESSKEYID"],
@@ -120,15 +121,12 @@ export const getByFileid = (app: Elysia) =>
         });
       }
       // limit
-      // limit
       if (query["pageNumber"] && query["pageSize"]) {
         ppws = ppws.slice(
           (Number(query["pageNumber"]) - 1) * Number(query["pageSize"]),
           Number(query["pageNumber"]) * Number(query["pageSize"])
         );
       }
-
-
       // get covers for paperworks
       await Promise.all(
         ppws.map(async (ppw) => {
@@ -144,19 +142,26 @@ export const getByFileid = (app: Elysia) =>
             );
           // update ppws with cover
           if (documentsWithCover.length > 0) {
-            const s3CoverFile: S3File = client.file(
-              documentsWithCover[0].coverPath!
-            );
-            const coverBuffer = await s3CoverFile.arrayBuffer();
-            if (coverBuffer instanceof ArrayBuffer) {
-              ppw.coverBase64 = arrayBufferToBase64(coverBuffer);
-            } else {
-              console.error("coverBuffer is not an array:", coverBuffer);
+            // get cover from redis
+            const cover = await redis.get(`document:${documentsWithCover[0].id}`);
+            if (cover) {
+              ppw.coverBase64 = arrayBufferToBase64(cover as ArrayBuffer);
+              console.log("cover", ppw.coverBase64);
+            } 
+            else {
+              const s3CoverFile: S3File = client.file(
+                documentsWithCover[0].coverPath!
+              );
+              const coverBuffer = await s3CoverFile.arrayBuffer();
+              if (coverBuffer instanceof ArrayBuffer) {
+                ppw.coverBase64 = arrayBufferToBase64(coverBuffer);
+              } else {
+                console.error("coverBuffer is not an array:", coverBuffer);
+              }
+              ppw.coverFileName = documentsWithCover[0].fileName;
             }
-            ppw.coverFileName = documentsWithCover[0].fileName;
           }
-        })
-      );
+        }));
       // get number of document for each paperwork
       await Promise.all(
         ppws.map(async (ppw) => {

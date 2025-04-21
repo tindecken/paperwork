@@ -14,7 +14,7 @@ import type { GenericResponseInterface } from "../../models/GenericResponseInter
 import { ulid } from "ulid";
 import sharp from "sharp";
 import { IMAGE_FILE_TYPE } from "../../libs/constants/imageType.ts";
-import { S3Client, type S3File } from "bun";
+import { S3Client, type S3File, redis } from "bun";
 
 const client = new S3Client({
   accessKeyId: process.env["MINIO_ACCESSKEYID"],
@@ -109,6 +109,7 @@ export const createPaperWork = (app: Elysia) =>
 
       // Handle file uploads
       if (body.files) {
+        // upload original files to S3
         for (const file of body.files) {
           const fileArrayBuffer = await file.arrayBuffer();
           if (fileArrayBuffer.byteLength === 0) {
@@ -126,12 +127,10 @@ export const createPaperWork = (app: Elysia) =>
             createdBy: user.name,
           };
           await db.insert(documentsTable).values(document);
-          
           const s3File: S3File = client.file(filePath);
           await s3File.write(fileArrayBuffer);
         }
       }
-
       // Set cover for the paperwork and reduce size of images
       const documents = await db
         .select()
@@ -144,7 +143,7 @@ export const createPaperWork = (app: Elysia) =>
         return IMAGE_FILE_TYPE.includes(fileExtension.toLowerCase());
       });
       if (documentImages.length > 0) {
-        // get file from S3 based on documentImages[0].filePath then create cover image
+        // Cover image: get file from S3 based on documentImages[0].filePath then create cover image
         const s3File: S3File = client.file(documentImages[0].filePath);
         const arrayBuffer = await s3File.arrayBuffer();
         await sharp(arrayBuffer)
@@ -163,9 +162,12 @@ export const createPaperWork = (app: Elysia) =>
               .update(documentsTable)
               .set({ isCover: 1, coverPath: coverFilePath })
               .where(eq(documentsTable.id, documentImages[0].id));
+            // set redis key with document id and Unit8Array of file
+            const fileUint8ArrayBuffer = new Uint8Array(arrayBuffer);
+            await redis.set(`document:${documentImages[0].id}`, fileUint8ArrayBuffer);
           });
       }
-      //reduce size of all images
+      // Reduce size of all images
       for (const image of documentImages) {
         const s3File: S3File = client.file(image.filePath);
         const buffer = await s3File.arrayBuffer();
