@@ -15,6 +15,7 @@ import { ulid } from "ulid";
 import sharp from "sharp";
 import { IMAGE_FILE_TYPE } from "../../libs/constants/imageType.ts";
 import { S3Client, type S3File, redis } from "bun";
+import { arrayBufferToBase64 } from "../../libs/libs.ts";
 
 const client = new S3Client({
   accessKeyId: process.env["MINIO_ACCESSKEYID"],
@@ -150,21 +151,26 @@ export const createPaperWork = (app: Elysia) =>
           .resize(300, 300)
           .jpeg({ mozjpeg: true, quality: 80 })
           .toBuffer()
-          .then(async (arrayBuffer: Buffer) => {
+          .then(async (buffer: Buffer) => {
             const coverFileName = `${documentImages[0].fileName.substring(
               0,
               documentImages[0].fileName.lastIndexOf(".")
             )}_cover.jpg`;
             const coverFilePath = `${selectedFileId}\\${ppwULID}\\${coverFileName}`;
             const s3File: S3File = client.file(coverFilePath);
-            await s3File.write(arrayBuffer);
+            await s3File.write(buffer);
             await db
               .update(documentsTable)
               .set({ isCover: 1, coverPath: coverFilePath })
               .where(eq(documentsTable.id, documentImages[0].id));
-            // set redis key with document id and Unit8Array of file
-            const fileUint8ArrayBuffer = new Uint8Array(arrayBuffer);
-            await redis.set(`document:${documentImages[0].id}`, fileUint8ArrayBuffer);
+            // convert buffer to base64 then set redis key with document id and base64
+            const base64 = arrayBufferToBase64(buffer.buffer as ArrayBuffer);
+            await redis.hmset(`document:${documentImages[0].id}`, [
+              "coverBase64", 
+              base64,
+              "fileName",
+              documentImages[0].fileName,
+            ]);
           });
       }
       // Reduce size of all images

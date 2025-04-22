@@ -143,10 +143,10 @@ export const getByFileid = (app: Elysia) =>
           // update ppws with cover
           if (documentsWithCover.length > 0) {
             // get cover from redis
-            const cover = await redis.get(`document:${documentsWithCover[0].id}`);
+            const cover = await redis.hmget(`document:${documentsWithCover[0].id}`, ["coverBase64", "fileName"]);
             if (cover) {
-              ppw.coverBase64 = arrayBufferToBase64(cover as ArrayBuffer);
-              console.log("cover", ppw.coverBase64);
+              ppw.coverBase64 = cover[0];
+              ppw.coverFileName = cover[1];
             } 
             else {
               const s3CoverFile: S3File = client.file(
