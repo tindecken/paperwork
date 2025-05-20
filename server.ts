@@ -20,7 +20,7 @@ const tls = (process.env.NODE_ENV === 'production') ? {
     key: Bun.file(process.env['KEY']!)
 }: {}
 const encoder = new TextEncoder()
-new Elysia()
+const app = new Elysia()
     .use(sessionInfo)
     .use(swagger())
     .use(cors({
@@ -92,3 +92,4 @@ new Elysia()
         tls
     })
 
+export type App = typeof app
