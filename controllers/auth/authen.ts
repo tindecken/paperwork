@@ -1,13 +1,8 @@
 import {Elysia, t} from "elysia"
 import { db } from '../../drizzle'
-import {themesTable, usersFilesTable, usersTable, type InsertUser} from '../../drizzle/schema'
-import * as jose from 'jose'
 import {and, eq} from 'drizzle-orm'
-import {createInsertSchema} from "drizzle-typebox"
-import type {TokenInterface} from "../../models/TokenInterface"
 import type {GenericResponseInterface} from "../../models/GenericResponseInterface"
 import {bearer} from "@elysiajs/bearer"
-import { ulid } from "ulid"
 import { auth } from "../../libs/auth"
 import { APIError } from "better-auth/api";
 

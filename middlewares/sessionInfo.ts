@@ -2,7 +2,6 @@ import { Elysia } from "elysia";
 import { auth } from "../libs/auth.ts";
 import { db } from "../drizzle/index.ts";
 import { eq, and, desc } from "drizzle-orm";
-import { usersFilesTable } from "../drizzle/schema.ts";
 import type { Session, User } from "better-auth/types";
 // user middleware (compute user and session and pass to routes)
 

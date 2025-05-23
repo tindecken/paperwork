@@ -4,7 +4,6 @@ import {
   sqliteTable,
   text,
   real,
-  blob,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
@@ -68,24 +67,7 @@ export const verificationsTable = sqliteTable("verifications", {
 
 // End -- betterAuth schema --
 
-export const usersFilesTable = sqliteTable("usersFiles", {
-  id: text("id").primaryKey(),
-  userId: text("userId")
-    .notNull()
-    .references(() => usersTable.id, { onDelete: "cascade" }),
-  fileId: text("fileId")
-    .notNull()
-    .references(() => filesTable.id, { onDelete: "cascade" }),
-  role: text("role").notNull(),
-  isSelected: integer("isSelected").notNull().default(0),
-  createdAt: text("createdAt")
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  createdBy: text("createdBy"),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-  updatedBy: text("updatedBy"),
-  isDeleted: integer("isDeleted").notNull().default(0),
-});
+// Removed usersFilesTable as it references the removed filesTable
 
 export const usersSettingsTable = sqliteTable("usersSettings", {
   id: text("id").primaryKey(),
@@ -119,26 +101,13 @@ export const usersThemesTable = sqliteTable("usersThemes", {
   updatedBy: text("updatedBy"),
 });
 
-export const filesTable = sqliteTable("files", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  createdAt: text('createdAt')
-  .default(sql`(CURRENT_TIMESTAMP)`)
-  .notNull(),
-  createdBy: text("createdBy"),
-  updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-  updatedBy: text("updatedBy"),
-  isDeleted: integer("isDeleted").notNull().default(0),
-});
-
 export const categoriesTable = sqliteTable(
   "categories",
   {
     id: text("id").primaryKey(),
-    fileId: text("fileId")
+    userId: text("userId")
       .notNull()
-      .references(() => filesTable.id, { onDelete: "cascade" }),
+      .references(() => usersTable.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     description: text("description"),
     createdAt: text('createdAt')
@@ -150,17 +119,16 @@ export const categoriesTable = sqliteTable(
     isDeleted: integer("isDeleted").notNull().default(0),
   },
   (t) => ({
-    uniqueFileandName: uniqueIndex("fileId_name").on(t.fileId, t.name),
+    uniqueUserandName: uniqueIndex("userId_name").on(t.userId, t.name),
   })
 );
 
 export const paperworksTable = sqliteTable("paperworks", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  description: text("description"),
+  note: text("note"),
+  customFields: text({ mode: 'json' }).$type<{ foo: string }>(),
   issuedAt: text("issuedAt"),
-  price: real("price"),
-  priceCurrency: text("priceCurrency"),
   createdAt: text('createdAt')
   .default(sql`(CURRENT_TIMESTAMP)`)
   .notNull(),
@@ -254,11 +222,7 @@ export const themesTable = sqliteTable("themes", {
 export type InsertUser = typeof usersTable.$inferInsert;
 export type SelectUser = typeof usersTable.$inferSelect;
 
-export type InsertFile = typeof filesTable.$inferInsert;
-export type SelectFile = typeof filesTable.$inferSelect;
-
-export type InsertUsersFiles = typeof usersFilesTable.$inferInsert;
-export type SelectUsersFiles = typeof usersFilesTable.$inferSelect;
+// File and UsersFiles types removed since their tables were removed
 
 export type InsertCategory = typeof categoriesTable.$inferInsert;
 export type SelectCategory = typeof categoriesTable.$inferSelect;
