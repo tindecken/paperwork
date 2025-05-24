@@ -1,7 +1,6 @@
 import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
-import { filesController } from './controllers/files'
 import { themesController } from './controllers/themes'
 import { cookie } from "@elysiajs/cookie";
 import type { GenericResponseInterface } from './models/GenericResponseInterface'
@@ -38,7 +37,6 @@ const app = new Elysia()
         app
         .use(cookie())
         .use(documentsController)
-        .use(filesController)
         .use(paperworksController)
         .use(categoriesController)
         .use(themesController)

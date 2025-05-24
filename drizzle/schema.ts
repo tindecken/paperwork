@@ -108,8 +108,9 @@ export const categoriesTable = sqliteTable(
     userId: text("userId")
       .notNull()
       .references(() => usersTable.id, { onDelete: "cascade" }),
+    icon: text("icon"),
     name: text("name").notNull(),
-    description: text("description"),
+    note: text("note"),
     createdAt: text('createdAt')
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
@@ -133,6 +134,7 @@ export const paperworksTable = sqliteTable("paperworks", {
   .default(sql`(CURRENT_TIMESTAMP)`)
   .notNull(),
   createdBy: text("createdBy"),
+  sharedLink: text("sharedLink"),
   updatedAt: text('updatedAt').$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   updatedBy: text("updatedBy"),
   isDeleted: integer("isDeleted").notNull().default(0),
