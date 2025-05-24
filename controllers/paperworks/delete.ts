@@ -6,7 +6,6 @@ import {
   paperworksTable,
 } from "../../drizzle/schema.ts";
 import { db } from "../../drizzle/index";
-import { isAdmin } from "../../libs/isAdmin.ts";
 import { eq } from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 
@@ -23,10 +22,6 @@ export const deletePaperWork = (app: Elysia) =>
       if (paperWork.length === 0) {
         throw new Error("Paper work not found");
       }
-      const isAdminRights = await isAdmin(
-        user.id,
-        selectedFileId
-      );
       if (!isAdminRights) {
         set.status = 403;
         const res: GenericResponseInterface = {

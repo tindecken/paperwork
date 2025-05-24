@@ -9,7 +9,6 @@ import {
 import { db } from "../../drizzle/index";
 import { eq, sql } from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
-import { isAdmin } from "../../libs/isAdmin";
 import { ulid } from "ulid";
 import sharp from "sharp";
 import { IMAGE_FILE_TYPE } from "../../libs/constants/imageType";
@@ -26,13 +25,6 @@ export const addDocuments = (app: Elysia) =>
   app.use(sessionInfo).post(
     "/upload",
     async ({ body, selectedFileId, user }) => {
-      const isAdminRights = await isAdmin(
-        user.id,
-        selectedFileId!
-      );
-      if (!isAdminRights) {
-        throw new Error("Forbidden");
-      }
       const paperwork = await db
         .select()
         .from(paperworksTable)

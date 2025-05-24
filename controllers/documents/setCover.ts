@@ -4,7 +4,6 @@ import { sessionInfo } from "../../middlewares/sessionInfo.ts";
 import {documentsTable, paperworksTable} from "../../drizzle/schema";
 import { db } from "../../drizzle";
 import {and, eq, sql} from "drizzle-orm";
-import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 import sharp from 'sharp'
 import { S3Client, type S3File } from "bun";
@@ -20,16 +19,6 @@ export const setCover = (app: Elysia) =>
 .post(
     "/setCover",
     async ({ body, user, selectedFileId, set }) => {
-      const isAdminRights = await isAdmin(user.id, selectedFileId);
-      if (!isAdminRights) {
-          set.status = 403;
-          const res: GenericResponseInterface = {
-              success: false,
-              message: "Forbidden",
-              data: null,
-          }
-          return res
-      }
       const documentPaperwork = await db
         .select()
         .from(documentsTable)

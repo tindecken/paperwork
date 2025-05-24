@@ -24,8 +24,9 @@ export const createCategory = (app: Elysia) =>
     }
     const newCategory: typeof categoriesTable.$inferInsert = {
       id: ulid(),
+      userId: body.userId,
       name: body.name,
-      description: body.description,
+      note: body.note,
     }
     const createdCategory = await db
       .insert(categoriesTable)
@@ -39,38 +40,8 @@ export const createCategory = (app: Elysia) =>
     return res
   }, {
     body: t.Object({
+      userId: t.String(),
       name: t.String(),
-      description: t.Optional(t.String())
+      note: t.Optional(t.String())
     }),
   })
-        data: null
-      }
-      return res
-    }
-    if (userFile.role !== 'admin') {
-      set.status = 403
-      const res: GenericResponseInterface = {
-        success: false,
-        message: `You are not allowed to create category, your role is ${userFile.role} instead of admin!`,
-        data: null
-      }
-      return res
-    }
-      const createdCategory = await db
-        .insert(categoriesTable)
-        .values(newCategory)
-        .returning()
-      
-      const res: GenericResponseInterface = {
-        success: true,
-        message: `Create category ${createdCategory[0].name} successfully!`,
-        data: createdCategory
-      }
-      return res
-    }, {
-      body: t.Object({
-        fileId: t.String(),
-        name: t.String(),
-        description: t.Optional(t.String())
-      }),
-});

@@ -8,7 +8,6 @@ import {
   paperworksCategoriesTable,
 } from "../../drizzle/schema.ts";
 import { db } from "../../drizzle";
-import { isAdmin } from "../../libs/isAdmin.ts";
 import { and, eq } from "drizzle-orm";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface.ts";
 import { ulid } from "ulid";
@@ -65,10 +64,8 @@ export const createPaperWork = (app: Elysia) =>
       const ppw: InsertPaperwork = {
         id: ppwULID,
         name: body.name.trim(),
-        description: body.description,
+        note: body.note,
         issuedAt: body.issueAt,
-        price: body.price ? parseFloat(body.price) : null,
-        priceCurrency: body.priceCurrency,
         createdBy: user.name,
       };
       const insertedPaperWork = await db
@@ -80,7 +77,6 @@ export const createPaperWork = (app: Elysia) =>
       const uncategorizedCategory = await db.query.categoriesTable.findFirst({
         where: and(
           eq(categoriesTable.name, "Uncategorized"),
-          eq(categoriesTable.fileId, selectedFileId),
         )
       });
       

@@ -4,22 +4,11 @@ import { sessionInfo } from "../../middlewares/sessionInfo";
 import {documentsTable, paperworksTable} from "../../drizzle/schema";
 import { db } from "../../drizzle";
 import {and, eq, sql} from "drizzle-orm";
-import { isAdmin } from "../../libs/isAdmin";
 import type { GenericResponseInterface } from "../../models/GenericResponseInterface";
 export const removeDocuments = (app: Elysia) =>
   app.use(sessionInfo).delete(
     "/remove",
     async ({ body, user, selectedFileId, set }) => {
-      const isAdminRights = await isAdmin(user.id, selectedFileId);
-      if (!isAdminRights) {
-        set.status = 403;
-        const res: GenericResponseInterface = {
-          success: false,
-          message: "Forbidden",
-          data: null,
-        }
-        return res
-      }
       const documentPaperwork = await db
         .select()
         .from(documentsTable)
